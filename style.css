@@ -71,7 +71,6 @@
 .wi-emoji {
   font-size: 1.4em;
   flex-shrink: 0;
-  margin-top: 0px;
 }
 
 .wi-title-line {
@@ -95,6 +94,14 @@
 .wi-entry-name {
   color: var(--text-color);
   font-style: italic;
+}
+
+.wi-depth-role {
+  color: var(--text-color-tertiary);
+  font-weight: 500;
+  background: var(--background-color-tertiary);
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 
 .wi-separator {
