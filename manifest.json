@@ -4,7 +4,7 @@
   "requires": [],
   "js": "index.js",
   "css": "style.css",
-  "author": "你的名稱",
+  "author": "包",
   "version": "1.0.0",
   "homePage": "https://github.com/misikyG/world-info-viewer",
   "description": "在聊天介面直觀查看已觸發的世界書條目"

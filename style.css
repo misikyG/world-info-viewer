@@ -62,7 +62,7 @@
     font-size: 0.9em;
     color: var(--text-color-secondary);
     margin-bottom: 12px;
-    padding-left: 32px; /* 對齊標題 */
+    padding-left: 32px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -82,7 +82,7 @@
 
 .wi-entry-content {
     margin-top: 12px;
-    padding-left: 32px; /* 對齊標題 */
+    padding-left: 32px;
 }
 
 .wi-entry-content strong {
