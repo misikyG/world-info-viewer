@@ -1,9 +1,10 @@
 {
-    "name": "World Info Viewer",
+    "name": "world-info-viewer",
+    "display_name": "World Info Viewer",
+    "author": "You!",
+    "description": "在聊天介面新增一個按鈕，用來即時查看 AI 回應觸發了哪些世界書條目。",
     "version": "1.0.0",
-    "author": "Your Name",
-    "description": "Displays which World Info entries were activated for each AI message.",
-    "js": "index.js",
+    "js": "script.js",
     "css": "style.css",
-    "requires": []
+    "loading_order": 999
 }
