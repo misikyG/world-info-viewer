@@ -2,12 +2,10 @@
     <h3>已觸發的世界書條目</h3>
     <hr>
 
-    <!-- 【修正點】更新 #if 判斷式以包含新的分類 -->
     {{#if (or global characterPrimary characterAdditional chat other)}}
         {{#if global}}
         <div class="wi-category">
             <h4><span class="wi-emoji">🌐</span> 全域世界書</h4>
-            <!-- 以下內容不變，複製即可 -->
             {{#each global}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
@@ -33,7 +31,6 @@
         </div>
         {{/if}}
 
-        <!-- 【新增】角色主要知識書區塊 -->
         {{#if characterPrimary}}
         <div class="wi-category">
             <h4><span class="wi-emoji">👤</span> 角色主要知識書</h4>
@@ -62,7 +59,6 @@
         </div>
         {{/if}}
 
-        <!-- 【新增】角色額外知識書區塊 -->
         {{#if characterAdditional}}
         <div class="wi-category">
             <h4><span class="wi-emoji">📚</span> 角色額外知識書</h4>
@@ -90,11 +86,10 @@
             {{/each}}
         </div>
         {{/if}}
-
+    
         {{#if chat}}
         <div class="wi-category">
             <h4><span class="wi-emoji">💬</span> 聊天知識書</h4>
-            <!-- 以下內容不變，複製即可 -->
             {{#each chat}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
@@ -121,7 +116,6 @@
         {{/if}}
 
         {{#if other}}
-        <!-- 其他區塊保持不變，作為備用 -->
         <div class="wi-category">
             <h4><span class="wi-emoji">📦</span> 其他</h4>
             {{#each other}}
@@ -152,3 +146,4 @@
         </div>
     {{/if}}
 </div>
+
