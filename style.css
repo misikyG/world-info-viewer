@@ -1,136 +1,196 @@
+/* ===== 主容器 ===== */
 .worldinfo-viewer-btn {
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
 .worldinfo-viewer-btn:hover {
-    opacity: 1;
+  opacity: 1;
 }
 
 .worldinfo-viewer-popup {
-    font-size: 14px;
-    padding: 5px 15px;
+  font-size: 14px;
+  padding: 5px 15px;
 }
 
 .worldinfo-viewer-popup h3 {
-    text-align: center;
-    color: var(--text-color);
+  text-align: center;
+  color: var(--text-color);
+  margin-bottom: 20px;
+  font-size: 1.3em;
 }
 
-.wi-category {
-    margin-bottom: 20px;
+/* ===== 插入位置組 ===== */
+.wi-position-group {
+  margin-bottom: 25px;
 }
 
-.wi-category h4 {
-    color: var(--primary-color);
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--primary-color-shadow);
-    padding-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.1em;
+.wi-position-header {
+  color: var(--primary-color);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary-color-shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15em;
 }
 
+.wi-position-name {
+  font-weight: bold;
+}
+
+/* ===== 條目容器 ===== */
+.wi-entries-container {
+  margin-left: 12px;
+}
+
+/* ===== 條目卡片 ===== */
 .wi-entry {
-    background: var(--background-color-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
+  background: var(--background-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.wi-entry:hover {
+  border-color: var(--primary-color);
+}
+
+/* ===== 條目標題行 ===== */
 .wi-entry-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .wi-emoji {
-    font-size: 1.4em;
+  font-size: 1.4em;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.wi-title {
-    font-weight: bold;
-    color: var(--text-color);
-    font-size: 1.1em;
+.wi-title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
 }
 
+.wi-source {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.wi-world {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.wi-entry-name {
+  color: var(--text-color);
+  font-style: italic;
+}
+
+.wi-separator {
+  color: var(--text-color-tertiary);
+  opacity: 0.6;
+}
+
+/* ===== 條目資訊 ===== */
 .wi-entry-info {
-    font-size: 0.9em;
-    color: var(--text-color-secondary);
-    margin-bottom: 10px;
-    padding-left: 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    align-items: flex-start;
+  font-size: 0.9em;
+  color: var(--text-color-secondary);
+  margin-bottom: 10px;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
 }
 
 .wi-info-item {
-    display: flex;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
 }
+
 .wi-info-item strong {
-    flex-shrink: 0;
-    margin-right: 8px;
-    color: var(--text-color-tertiary);
+  flex-shrink: 0;
+  color: var(--text-color-tertiary);
+  min-width: 50px;
 }
+
 .wi-info-item span {
-    color: var(--text-color-secondary);
+  color: var(--text-color-secondary);
 }
 
-.wi-entry-content {
-    margin-top: 12px;
-    padding-left: 32px;
-    text-align: left;
-}
-
-.wi-entry-content strong {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--text-color-tertiary);
-}
-
-.wi-entry-content pre {
-    background: var(--background-color-tertiary);
-    border: 1px solid var(--border-color);
-    padding: 10px;
-    border-radius: 4px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 250px;
-    overflow-y: auto;
-    font-size: 0.95em;
-    color: var(--text-color-secondary);
-}
-
-.wi-no-entries {
-    text-align: center;
-    padding: 20px;
-    background: var(--background-color-secondary);
-    border-radius: 8px;
-    color: var(--text-color-secondary);
-}
-
+/* ===== 摺疊詳情 ===== */
 .wi-details {
-    margin-top: 4px;
-    width: 100%;
-    text-align: left;
+  margin-top: 8px;
+  margin-left: 24px;
+  width: calc(100% - 24px);
+  text-align: left;
 }
 
 .wi-details summary {
-    cursor: pointer;
-    color: var(--text-color-tertiary);
-    font-weight: bold;
-    text-align: left;
-    padding-left: 0;
+  cursor: pointer;
+  color: var(--text-color-tertiary);
+  font-weight: bold;
+  text-align: left;
+  padding-left: 0;
+  user-select: none;
+}
+
+.wi-details summary:hover {
+  color: var(--primary-color);
 }
 
 .wi-details-content {
-    padding-top: 4px;
-    padding-left: 18px;
-    color: var(--text-color-secondary);
-    text-align: left;
+  padding-top: 8px;
+  padding-left: 18px;
+  color: var(--text-color-secondary);
+  text-align: left;
+}
+
+/* ===== 內容展示 ===== */
+.wi-entry-content {
+  margin-top: 12px;
+  padding-left: 24px;
+  text-align: left;
+}
+
+.wi-entry-content strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-color-tertiary);
+}
+
+.wi-entry-content pre {
+  background: var(--background-color-tertiary);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 250px;
+  overflow-y: auto;
+  font-size: 0.95em;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+/* ===== 空狀態 ===== */
+.wi-no-entries {
+  text-align: center;
+  padding: 30px;
+  background: var(--background-color-secondary);
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  font-style: italic;
 }
