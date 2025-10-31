@@ -1,10 +1,10 @@
-import { eventSource, event_types } from '../../../script.js';
-import { chat } from '../../../script.js';
-import { selected_world_info, world_info, world_info_position } from '../../../world-info.js';
-import { this_chid, characters } from '../../../script.js';
-import { chat_metadata } from '../../../script.js';
-import { Popup, POPUP_TYPE } from '../../../popup.js';
-import { substituteParams } from '../../../script.js';
+import { eventSource, event_types } from '../../../scripts/script.js';
+import { chat } from '../../../scripts/script.js';
+import { selected_world_info, world_info, world_info_position } from '../../../scripts/world-info.js';
+import { this_chid, characters } from '../../../scripts/script.js';
+import { chat_metadata } from '../../../scripts/script.js';
+import { Popup, POPUP_TYPE } from '../../../scripts/popup.js';
+import { substituteParams } from '../../../scripts/script.js';
 
 // 用來暫存最近一次生成所觸發的世界書條目
 let lastActivatedEntries = [];
