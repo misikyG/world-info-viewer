@@ -4,7 +4,7 @@ import { renderExtensionTemplateAsync } from '/scripts/extensions.js';
 import { callGenericPopup, POPUP_TYPE } from '/scripts/popup.js';
 
 // 這個名稱必須與您的擴充功能資料夾名稱完全一致
-const extensionName = "st-world-info-viewer";
+const extensionName = "third-party/st-world-info-viewer";
 const messageWorldInfoMap = new Map();
 
 // 世界書位置的定義，用於分類和顯示
@@ -165,3 +165,4 @@ async function showWorldInfoPopup(messageId) {
 jQuery(async () => {
     console.log(`[${extensionName}] 擴充已載入。`);
 });
+
