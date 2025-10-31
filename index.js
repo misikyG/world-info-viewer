@@ -29,14 +29,14 @@ const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extension
 
 // 插入位置對應表
 const positionInfo = {
-  0: { name: "角色設定前", emoji: "📙" },
-  1: { name: "角色設定後", emoji: "📙" },
-  2: { name: "作者註釋頂部", emoji: "📝" },
-  3: { name: "作者註釋底部", emoji: "📝" },
-  4: { name: "範例頂部", emoji: "📄" },
-  5: { name: "範例底部", emoji: "📄" },
-  6: { name: "依深度插入", emoji: "💉" },
-  7: { name: "Outlet", emoji: "➡️" },
+  0: { name: "角色設定前", emoji: "📙", order: 0 },
+  1: { name: "角色設定後", emoji: "📙", order: 1 },
+  2: { name: "作者註釋頂部", emoji: "📝", order: 2 },
+  3: { name: "作者註釋底部", emoji: "📝", order: 3 },
+  5: { name: "範例頂部", emoji: "📄", order: 4 },
+  6: { name: "範例底部", emoji: "📄", order: 5 },
+  4: { name: "依深度插入", emoji: "💉", order: 6 },
+  7: { name: "Outlet", emoji: "➡️", order: 7 },
 };
 
 // 選擇邏輯對應表
@@ -47,20 +47,19 @@ const selectiveLogicInfo = {
   3: '包含全部 (AND ALL)',
 };
 
-// 世界書來源分類
+// 來源分類鍵
 const WI_SOURCE_KEYS = {
   GLOBAL: 'global',
   CHARACTER_PRIMARY: 'characterPrimary',
   CHARACTER_ADDITIONAL: 'characterAdditional',
   CHAT: 'chat',
-  OTHER: 'other',
 };
 
-// 條目來源類型（用於排序）
+// 條目來源類型（用於同深度排序）
 const ENTRY_SOURCE_TYPE = {
-  ASSISTANT: 3,
+  ASSISTANT: 3,  // 最優先
   USER: 2,
-  SYSTEM: 1, 
+  SYSTEM: 1,     // 最低優先
 };
 
 /**
@@ -77,7 +76,7 @@ function getEntryStatus(entry) {
 }
 
 /**
- * 確定世界書的來源（全域/主要/額外/聊天）
+ * 確定世界書的來源（全域/角色主要/角色額外/聊天）
  */
 function getWISourceKey(entry) {
   const worldName = entry.world;
@@ -105,12 +104,26 @@ function getWISourceKey(entry) {
     return WI_SOURCE_KEYS.GLOBAL;
   }
 
-  return WI_SOURCE_KEYS.OTHER;
+  // 移除「OTHER」分類，無效的來源直接返回 null
+  return null;
+}
+
+/**
+ * 來源分類的顯示名稱
+ */
+function getSourceDisplayName(sourceKey) {
+  const sourceNames = {
+    [WI_SOURCE_KEYS.GLOBAL]: '全域',
+    [WI_SOURCE_KEYS.CHARACTER_PRIMARY]: '角色主要知識',
+    [WI_SOURCE_KEYS.CHARACTER_ADDITIONAL]: '角色額外知識',
+    [WI_SOURCE_KEYS.CHAT]: '聊天知識',
+  };
+  return sourceNames[sourceKey] || '未知';
 }
 
 /**
  * 獲取條目的來源類型（AI助手/使用者/系統）
- * 用於排序優先級
+ * 用於同深度排序
  */
 function getEntrySourceType(entry) {
   if (entry.role === 'assistant' || entry.excludeRoles?.includes('assistant') === false) {
@@ -126,52 +139,102 @@ function getEntrySourceType(entry) {
 }
 
 /**
- * 來源分類的顯示名稱
+ * 獲取世界書的順序值
+ * 需要從 world_info 中查找該世界書的 order 屬性
  */
-function getSourceDisplayName(sourceKey) {
-  const sourceNames = {
-    [WI_SOURCE_KEYS.GLOBAL]: '全域',
-    [WI_SOURCE_KEYS.CHARACTER_PRIMARY]: '主要',
-    [WI_SOURCE_KEYS.CHARACTER_ADDITIONAL]: '額外',
-    [WI_SOURCE_KEYS.CHAT]: '聊天',
-    [WI_SOURCE_KEYS.OTHER]: '其他',
-  };
-  return sourceNames[sourceKey] || '未知';
+function getWorldOrder(worldName) {
+  // 在 world_info.lorebookReplace 中查找
+  if (world_info.lorebookReplace) {
+    const book = world_info.lorebookReplace.find(b => b.name === worldName);
+    if (book && typeof book.order === 'number') {
+      return book.order;
+    }
+  }
+  
+  // 備用查找（如果結構不同）
+  if (Array.isArray(world_info) && world_info.find) {
+    const book = world_info.find(b => b.name === worldName);
+    if (book && typeof book.order === 'number') {
+      return book.order;
+    }
+  }
+  
+  // 預設為無限大（最後）
+  return Infinity;
 }
 
 /**
  * 排序比較函數
- * 優先度：深度（降序）> 角色類型（AI > 使用者 > 系統） > 原始順序
+ * 優先度：
+ * 1. 插入位置（固定順序）
+ * 2. 世界書順序（小到大）
+ * 3. 深度（大到小）- 僅對「依深度插入」
+ * 4. 角色類型（AI > 使用者 > 系統） - 僅當深度相同時
+ * 5. uid（原始順序）
  */
 function compareEntries(entryA, entryB) {
-  const depthDiff = (entryB.depth ?? -Infinity) - (entryA.depth ?? -Infinity);
-  if (depthDiff !== 0) {
-    return depthDiff;
+  const posA = entryA.position ?? 4;
+  const posB = entryB.position ?? 4;
+  
+  // 優先度 1：插入位置
+  const posOrderA = positionInfo[posA]?.order ?? 999;
+  const posOrderB = positionInfo[posB]?.order ?? 999;
+  const posDiff = posOrderA - posOrderB;
+  if (posDiff !== 0) {
+    return posDiff;
   }
 
+  // 優先度 2：世界書順序（數值小的優先）
+  const worldOrderA = getWorldOrder(entryA.world);
+  const worldOrderB = getWorldOrder(entryB.world);
+  const worldOrderDiff = worldOrderA - worldOrderB;
+  if (worldOrderDiff !== 0) {
+    return worldOrderDiff;
+  }
+
+  // 優先度 3：深度排序（大的優先）- 僅對「依深度插入」(位置 4)
+  if (posA === 4) {
+    const depthDiff = (entryB.depth ?? -Infinity) - (entryA.depth ?? -Infinity);
+    if (depthDiff !== 0) {
+      return depthDiff;
+    }
+  }
+
+  // 優先度 4：同深度按角色類型排序（AI > 使用者 > 系統）
   const sourceTypeDiff = getEntrySourceType(entryB) - getEntrySourceType(entryA);
   if (sourceTypeDiff !== 0) {
     return sourceTypeDiff;
   }
 
+  // 優先度 5：相同優先度按 uid 排序
   return (entryA.uid ?? 0) - (entryB.uid ?? 0);
 }
 
 /**
  * 處理世界書資料
+ * 改革後的結構：按插入位置分組，每組內按世界書順序、深度和角色排序
  */
 function processWorldInfoData(activatedEntries) {
+  // 過濾無效的來源（移除OTHER分類）
+  const validEntries = activatedEntries.filter(entry => {
+    if (!entry || typeof entry !== 'object') {
+      console.warn('[WI-Viewer] 收到無效的 entry:', entry);
+      return false;
+    }
+    const sourceKey = getWISourceKey(entry);
+    if (sourceKey === null) {
+      console.warn('[WI-Viewer] 忽略無效來源的 entry:', entry);
+      return false;
+    }
+    return true;
+  });
+
   // 第一步：按插入位置分組
   const byPosition = {};
   
-  activatedEntries.forEach(entry => {
-    if (!entry || typeof entry !== 'object') {
-      console.warn('[WI-Viewer] 收到無效的 entry:', entry);
-      return;
-    }
-
-    const position = entry.position ?? 4;
-    const posInfo = positionInfo[position] || { name: `未知位置 (${position})`, emoji: '❓' };
+  validEntries.forEach(entry => {
+    const position = entry.position ?? 4; // 預設為「依深度插入」
+    const posInfo = positionInfo[position] || { name: `未知位置 (${position})`, emoji: '❓', order: 999 };
     const posKey = `pos_${position}`;
 
     if (!byPosition[posKey]) {
@@ -179,6 +242,7 @@ function processWorldInfoData(activatedEntries) {
         position: position,
         positionName: posInfo.name,
         positionEmoji: posInfo.emoji,
+        positionOrder: posInfo.order,
         entries: [],
       };
     }
@@ -201,26 +265,22 @@ function processWorldInfoData(activatedEntries) {
       selectiveLogicName: hasSecondaryKeys ? (selectiveLogicInfo[entry.selectiveLogic] ?? `未知邏輯 (${entry.selectiveLogic})`) : null,
       depth: entry.depth ?? null,
       role: entry.role || 'assistant',
-      sourceType: getEntrySourceType(entry),
+      position: position,
+      worldOrder: getWorldOrder(entry.world),
     };
 
     byPosition[posKey].entries.push(processedEntry);
   });
 
-  // 第二步：每個位置內部按深度和角色排序
+  // 第二步：每個位置內部按世界書順序、深度和角色排序
   Object.values(byPosition).forEach(posGroup => {
     posGroup.entries.sort(compareEntries);
   });
 
-  // 第三步：過濾空的位置組（如果沒有觸發任何條目）
-  const filtered = Object.values(byPosition).filter(
-    posGroup => posGroup.entries.length > 0
-  );
+  // 第三步：按位置順序排列
+  const sorted = Object.values(byPosition).sort((a, b) => a.positionOrder - b.positionOrder);
 
-  // 第四步：按位置順序排列
-  filtered.sort((a, b) => a.position - b.position);
-
-  return filtered;
+  return sorted;
 }
 
 /**
@@ -284,6 +344,7 @@ async function showWorldInfoPopup(messageId) {
 
 let lastActivatedWorldInfo = null;
 
+// 監聽世界書觸發事件
 eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
   console.log('[WI-Viewer] 收到 WORLD_INFO_ACTIVATED 事件，資料:', JSON.parse(JSON.stringify(data)));
   
@@ -296,6 +357,7 @@ eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
   }
 });
 
+// 監聽訊息接收事件，將最後觸發的世界書資料附加到訊息
 eventSource.on(event_types.MESSAGE_RECEIVED, (messageId) => {
   if (lastActivatedWorldInfo && chat[messageId] && !chat[messageId].is_user) {
     if (!chat[messageId].extra) {
@@ -306,10 +368,12 @@ eventSource.on(event_types.MESSAGE_RECEIVED, (messageId) => {
   }
 });
 
+// 監聽訊息渲染事件，為新渲染的訊息添加按鈕
 eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (messageId) => {
   addViewButtonToMessage(String(messageId));
 });
 
+// 監聽聊天變更事件，為所有現有訊息添加按鈕
 eventSource.on(event_types.CHAT_CHANGED, () => {
   setTimeout(() => {
     document.querySelectorAll('#chat .mes').forEach(messageElement => {
