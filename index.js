@@ -1,10 +1,15 @@
-import { eventSource, event_types } from '../../../scripts/script.js';
-import { chat } from '../../../scripts/script.js';
-import { selected_world_info, world_info, world_info_position } from '../../../scripts/world-info.js';
-import { this_chid, characters } from '../../../scripts/script.js';
-import { chat_metadata } from '../../../scripts/script.js';
-import { Popup, POPUP_TYPE } from '../../../scripts/popup.js';
-import { substituteParams } from '../../../scripts/script.js';
+import {
+    eventSource,
+    event_types,
+    chat,
+    this_chid,
+    characters,
+    chat_metadata,
+    substituteParams,
+    name2 as characterName // 導入 name2 並重新命名為 characterName
+} from '/scripts/script.js';
+import { selected_world_info, world_info, world_info_position, getCharaFilename } from '/scripts/world-info.js';
+import { Popup, POPUP_TYPE } from '/scripts/popup.js';
 
 // 用來暫存最近一次生成所觸發的世界書條目
 let lastActivatedEntries = [];
@@ -32,7 +37,7 @@ function determineWISource(entry) {
             return '角色主要知識書';
         }
         // 檢查附加世界書
-        const charFileName = `${char.avatar.replace('.png', '')}---${char.name}`;
+        const charFileName = getCharaFilename(this_chid);
         const extraLore = world_info.charLore?.find(e => e.name === charFileName);
         if (extraLore?.extraBooks?.includes(entry.world)) {
             return '角色附加知識書';
@@ -41,6 +46,7 @@ function determineWISource(entry) {
 
     return '未知來源';
 }
+
 
 /**
  * 根據你的要求，決定條目類型對應的 Emoji
@@ -101,6 +107,7 @@ async function showWIPopup(messageId) {
         const positionText = getPositionText(entry);
         // 將 HTML 特殊字元跳脫，避免 XSS 風險和顯示問題
         const escapeHtml = (unsafe) => {
+            if (typeof unsafe !== 'string') return '';
             return unsafe
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
@@ -109,11 +116,9 @@ async function showWIPopup(messageId) {
                  .replace(/'/g, "&#039;");
         };
 
-        // 顯示被觸發的關鍵字。這裡需要一個更複雜的邏輯來比對，我們先簡單顯示所有關鍵字
-        // SillyTavern 的事件沒有直接提供「哪個」關鍵字被觸發，只提供了整個被觸發的條目。
-        // 這裡我們先顯示所有主要和次要關鍵字。
         const primaryKeys = (entry.key || []).join(', ');
         const secondaryKeys = (entry.keysecondary || []).join(', ');
+        const content = substituteParams(entry.content, null, characterName);
 
         htmlContent += `
             <div class="entry-block">
@@ -123,7 +128,7 @@ async function showWIPopup(messageId) {
                 ${secondaryKeys ? `<p><b>過濾器:</b> ${escapeHtml(secondaryKeys)}</p>` : ''}
                 <p><b>插入:</b> ${escapeHtml(positionText)}</p>
                 <p><b>內容:</b></p>
-                <pre><code>${escapeHtml(substituteParams(entry.content))}</code></pre>
+                <pre><code>${escapeHtml(content)}</code></pre>
             </div>
         `;
     }
@@ -178,7 +183,7 @@ async function showWIPopup(messageId) {
 function addWIVisualizerButton(messageId) {
     const message = chat[messageId];
     // 只在 AI 回覆且有觸發紀錄時顯示按鈕
-    if (message.is_user || message.is_system || !message?.extra?.activatedWI || message.extra.activatedWI.length === 0) {
+    if (!message || message.is_user || message.is_system || !message?.extra?.activatedWI || message.extra.activatedWI.length === 0) {
         return;
     }
 
@@ -247,6 +252,8 @@ function init() {
         // 清空暫存，避免污染新的聊天
         lastActivatedEntries = [];
     });
+
+    console.log('World Info Visualizer extension loaded!');
 }
 
 // 執行初始化
