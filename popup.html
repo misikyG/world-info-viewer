@@ -3,7 +3,7 @@
     <hr>
 
     {{! 只有當任何一個分類有內容時，才顯示下面的區塊 }}
-    {{#if (or global.length characterPrimary.length characterExtra.length chat.length persona.length other.length)}}
+    {{#if (or global.length character.length chat.length other.length)}}
 
         {{#if global.length}}
         <div class="wi-category">
@@ -15,8 +15,12 @@
                     <span class="wi-title">{{worldName}} / {{entryName}}</span>
                 </div>
                 <div class="wi-entry-info">
-                    {{#if keys}}<div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>{{/if}}
-                    {{#if secondaryKeys}}<div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>{{/if}}
+                    {{#if keys}}
+                    <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
+                    {{/if}}
+                    {{#if secondaryKeys}}
+                    <div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>
+                    {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
@@ -28,43 +32,22 @@
         </div>
         {{/if}}
 
-        {{!-- 【修改】將 character 改為 characterPrimary --}}
-        {{#if characterPrimary.length}}
+        {{#if character.length}}
         <div class="wi-category">
             <h4><span class="wi-emoji">👤</span> 角色主要知識書</h4>
-            {{#each characterPrimary}}
+            {{#each character}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
                     <span class="wi-emoji">{{emoji}}</span>
                     <span class="wi-title">{{worldName}} / {{entryName}}</span>
                 </div>
                 <div class="wi-entry-info">
-                    {{#if keys}}<div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>{{/if}}
-                    {{#if secondaryKeys}}<div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>{{/if}}
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
-                </div>
-                <div class="wi-entry-content">
-                    <strong>內容：</strong>
-                    <pre>{{content}}</pre>
-                </div>
-            </div>
-            {{/each}}
-        </div>
-        {{/if}}
-        
-        {{!-- 【新增】角色額外知識書 --}}
-        {{#if characterExtra.length}}
-        <div class="wi-category">
-            <h4><span class="wi-emoji">📚</span> 角色額外知識書</h4>
-            {{#each characterExtra}}
-            <div class="wi-entry">
-                <div class="wi-entry-header">
-                    <span class="wi-emoji">{{emoji}}</span>
-                    <span class="wi-title">{{worldName}} / {{entryName}}</span>
-                </div>
-                <div class="wi-entry-info">
-                    {{#if keys}}<div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>{{/if}}
-                    {{#if secondaryKeys}}<div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>{{/if}}
+                    {{#if keys}}
+                    <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
+                    {{/if}}
+                    {{#if secondaryKeys}}
+                    <div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>
+                    {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
@@ -78,7 +61,7 @@
 
         {{#if chat.length}}
         <div class="wi-category">
-            <h4><span class="wi-emoji">💬</span> 聊天專屬知識書</h4>
+            <h4><span class="wi-emoji">💬</span> 角色聊天知識書</h4>
             {{#each chat}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
@@ -86,33 +69,13 @@
                     <span class="wi-title">{{worldName}} / {{entryName}}</span>
                 </div>
                 <div class="wi-entry-info">
-                    {{#if keys}}<div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>{{/if}}
-                    {{#if secondaryKeys}}<div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>{{/if}}
+                    {{#if keys}}
+                    <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
+                    {{/if}}
+                    {{#if secondaryKeys}}
+                    <div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>
+                    {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{#if depth}} / 深度 {{depth}}{{/if}}</span></div>
-                </div>
-                <div class="wi-entry-content">
-                    <strong>內容：</strong>
-                    <pre>{{content}}</pre>
-                </div>
-            </div>
-            {{/each}}
-        </div>
-        {{/if}}
-
-        {{!-- 【新增】使用者人設知識書 --}}
-        {{#if persona.length}}
-        <div class="wi-category">
-            <h4><span class="wi-emoji">🎭</span> 使用者人設知識書</h4>
-            {{#each persona}}
-            <div class="wi-entry">
-                <div class="wi-entry-header">
-                    <span class="wi-emoji">{{emoji}}</span>
-                    <span class="wi-title">{{worldName}} / {{entryName}}</span>
-                </div>
-                <div class="wi-entry-info">
-                    {{#if keys}}<div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>{{/if}}
-                    {{#if secondaryKeys}}<div class="wi-info-item"><strong>過濾器：</strong><span>{{secondaryKeys}}</span></div>{{/if}}
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
