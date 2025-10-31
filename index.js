@@ -1,11 +1,19 @@
+// 【修正點】將 import 拆分成三個，從各自正確的來源導入
 import {
     eventSource,
     event_types,
     chat,
-    renderExtensionTemplateAsync,
+} from '../../../../script.js';
+
+import {
+    renderExtensionTemplateAsync
+} from '../../../extensions.js';
+
+import {
     callGenericPopup,
     POPUP_TYPE
-} from '../../../../script.js';
+} from '../../../popup.js';
+
 
 // 透過 import.meta.url 動態取得擴充路徑
 const url = new URL(import.meta.url);
@@ -55,11 +63,9 @@ function getWICategoryKey(entry) {
     if (entry.scopeToChar === false) {
         return WI_CATEGORY_KEYS.GLOBAL;
     }
-    // position 4 (atDepth) 經常與聊天特定知識書相關
     if (entry.position === 4) {
         return WI_CATEGORY_KEYS.CHAT;
     }
-    // 其他與角色相關的都歸類到角色
     return WI_CATEGORY_KEYS.CHARACTER;
 }
 
@@ -73,7 +79,7 @@ function processWorldInfoData(activatedEntries) {
         [WI_CATEGORY_KEYS.GLOBAL]: [],
         [WI_CATEGORY_KEYS.CHARACTER]: [],
         [WI_CATEGORY_KEYS.CHAT]: [],
-        [WI_CATEGORY_KEYS.OTHER]: [], // 保留一個 "其他" 以防萬一
+        [WI_CATEGORY_KEYS.OTHER]: [],
     };
 
     activatedEntries.forEach(entry => {
@@ -81,7 +87,6 @@ function processWorldInfoData(activatedEntries) {
         const status = getEntryStatus(entry);
         const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})`, emoji: '❓' };
 
-        // 建立符合 popup.html 模板的物件
         const processedEntry = {
             worldName: entry.world,
             entryName: entry.comment || `條目 #${entry.uid}`,
@@ -91,10 +96,9 @@ function processWorldInfoData(activatedEntries) {
             content: entry.content,
             keys: entry.key?.join(', ') || null,
             secondaryKeys: entry.keysecondary?.join(', ') || null,
-            depth: entry.depth, // 傳遞深度資訊給模板
+            depth: entry.depth,
         };
         
-        // 根據分類鍵放入對應的陣列
         if (categorized[categoryKey]) {
             categorized[categoryKey].push(processedEntry);
         } else {
@@ -110,13 +114,11 @@ function processWorldInfoData(activatedEntries) {
  * @param {string} messageId - 訊息的 ID
  */
 function addViewButtonToMessage(messageId) {
-    // **修正點**: 首先檢查該訊息是否有世界書資料，沒有就直接返回
     if (!chat[messageId]?.extra?.worldInfoViewer) {
         return;
     }
 
     const messageElement = document.querySelector(`.mes[mesid="${messageId}"]`);
-    // 確保是 AI 訊息
     if (!messageElement || messageElement.getAttribute('is_user') === 'true') {
         return;
     }
@@ -126,12 +128,12 @@ function addViewButtonToMessage(messageId) {
 
     const buttonId = `worldinfo-viewer-btn-${messageId}`;
     if (document.getElementById(buttonId)) {
-        return; // 按鈕已存在，不再新增
+        return;
     }
 
     const button = document.createElement('div');
     button.id = buttonId;
-    button.className = 'mes_button worldinfo-viewer-btn fa-solid fa-earth-asia'; // 使用 Font Awesome 圖示
+    button.className = 'mes_button worldinfo-viewer-btn fa-solid fa-earth-asia';
     button.title = '查看此回覆觸發的世界書';
 
     button.addEventListener('click', (event) => {
@@ -139,7 +141,6 @@ function addViewButtonToMessage(messageId) {
         showWorldInfoPopup(messageId);
     });
 
-    // 使用 prepend 將按鈕加到最前面
     buttonContainer.prepend(button);
 }
 
@@ -168,7 +169,6 @@ async function showWorldInfoPopup(messageId) {
     }
 }
 
-
 // --- 事件監聽器 ---
 
 let lastActivatedWorldInfo = null;
@@ -184,32 +184,28 @@ eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
 
 // 2. AI訊息資料接收後，將暫存的資料綁定到 chat 物件上
 eventSource.on(event_types.MESSAGE_RECEIVED, (messageId) => {
-    // 確保是 AI 訊息且有暫存資料
     if (lastActivatedWorldInfo && chat[messageId] && !chat[messageId].is_user) {
         if (!chat[messageId].extra) {
             chat[messageId].extra = {};
         }
         chat[messageId].extra.worldInfoViewer = lastActivatedWorldInfo;
-        lastActivatedWorldInfo = null; // 清空暫存，避免污染下一則訊息
+        lastActivatedWorldInfo = null;
     }
 });
 
 // 3. AI訊息在畫面上渲染完成後，執行新增按鈕的函式
 eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (messageId) => {
-    // **修正點**: 不在這裡做 if 判斷，直接呼叫函式
     addViewButtonToMessage(String(messageId));
 });
 
 // 4. 當聊天記錄變更時 (如切換聊天)，為所有歷史訊息補上按鈕
 eventSource.on(event_types.CHAT_CHANGED, () => {
-    // 延遲執行，確保 DOM 都已載入完成
     setTimeout(() => {
         document.querySelectorAll('#chat .mes').forEach(messageElement => {
             const mesId = messageElement.getAttribute('mesid');
             if (mesId) {
-                // **修正點**: 不在這裡做 if 判斷，直接呼叫函式
                 addViewButtonToMessage(mesId);
             }
         });
-    }, 500); // 500ms 是一個比較保險的延遲
+    }, 500);
 });
