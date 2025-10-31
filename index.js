@@ -1,10 +1,10 @@
 import { eventSource, eventTypes } from "../../../../script.js";
-import { 
+import {
     getContext,
     renderExtensionTemplateAsync,
     callGenericPopup,
-    POPUP_TYPE 
-} from "../../../../scripts/extensions.js";
+    POPUP_TYPE
+} from "../../../extensions.js";
 
 // 儲存每則訊息觸發的世界書資料
 const messageWorldInfoMap = new Map();
@@ -17,36 +17,34 @@ const positionInfo = {
     4: { name: "深度", emoji: "🔗", category: "角色聊天知識書" },
 };
 
-// 監聽世界書觸發事件
-eventSource.on(eventTypes.WORLDINFO_ACTIVATED, async (activatedEntries) => {
-    if (!activatedEntries || activatedEntries.length === 0) {
-        return;
-    }
+// 【第一步】當世界書觸發時，只儲存資料
+eventSource.on(eventTypes.WORLDINFO_ACTIVATED, (activatedEntries) => {
+    if (!activatedEntries || activatedEntries.length === 0) return;
 
-    // 獲取當前訊息的ID
-    const messageId = getCurrentMessageId();
-    
-    // 整理觸發的世界書資料
+    // 這裡我們假設最後一則訊息就是觸發源
+    const lastMessage = getLastMessage();
+    if (!lastMessage) return;
+
+    const messageId = lastMessage.getAttribute('mesid');
     const organizedData = organizeWorldInfoData(activatedEntries);
-    
-    // 儲存到 Map 中
     messageWorldInfoMap.set(messageId, organizedData);
-    
-    // 為訊息添加檢視按鈕
-    addViewButtonToMessage(messageId);
 });
 
+// 【第二步】當訊息渲染完成時，才去檢查並加上按鈕
+eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, (messageId) => {
+    // 檢查這則渲染好的訊息是否有對應的世界書觸發資料
+    if (messageWorldInfoMap.has(String(messageId))) {
+        // 時機正好，加上按鈕！
+        addViewButtonToMessage(String(messageId));
+    }
+});
+
+
 function organizeWorldInfoData(entries) {
-    const organized = {
-        global: [],
-        character: [],
-        chat: [],
-        other: []
-    };
+    const organized = { global: [], character: [], chat: [], other: [] };
 
     entries.forEach(entry => {
-        const posInfo = positionInfo[entry.position] || { name: "未知", emoji: "❓" };
-        
+        const posInfo = positionInfo[entry.position] || { name: "未知", emoji: "❓", category: "其他" };
         const formattedEntry = {
             worldName: entry.world,
             entryName: entry.comment || `條目 ${entry.uid}`,
@@ -54,53 +52,46 @@ function organizeWorldInfoData(entries) {
             position: posInfo.name,
             content: entry.content,
             keys: entry.key ? entry.key.join(", ") : "",
-            secondaryKeys: entry.keysecondary && entry.keysecondary.length > 0 
-                ? entry.keysecondary.join(", ") 
-                : "",
+            secondaryKeys: entry.keysecondary && entry.keysecondary.length > 0 ? entry.keysecondary.join(", ") : "",
             depth: entry.depth || ""
         };
 
         const category = posInfo.category;
-        if (category === "全域世界書") {
-            organized.global.push(formattedEntry);
-        } else if (category === "角色主要知識書") {
-            organized.character.push(formattedEntry);
-        } else if (category === "角色聊天知識書") {
-            organized.chat.push(formattedEntry);
-        } else {
-            organized.other.push(formattedEntry);
-        }
+        if (category === "全域世界書") organized.global.push(formattedEntry);
+        else if (category === "角色主要知識書") organized.character.push(formattedEntry);
+        else if (category === "角色聊天知識書") organized.chat.push(formattedEntry);
+        else organized.other.push(formattedEntry);
     });
 
     return organized;
 }
 
-function getCurrentMessageId() {
+function getLastMessage() {
     const messages = document.querySelectorAll("#chat .mes");
-    if (messages.length > 0) {
-        const lastMessage = messages[messages.length - 1];
-        return lastMessage.getAttribute("mesid") || messages.length - 1;
-    }
-    return Date.now();
+    return messages.length > 0 ? messages[messages.length - 1] : null;
 }
 
 function addViewButtonToMessage(messageId) {
-    const messageElement = document.querySelector(`#chat .mes[mesid="${messageId}"]`);
-    if (!messageElement) return;
+    // 延遲一小段時間確保所有按鈕都已就位
+    setTimeout(() => {
+        const messageElement = document.querySelector(`#chat .mes[mesid="${messageId}"]`);
+        if (!messageElement) return;
 
-    if (messageElement.querySelector(".worldinfo-viewer-btn")) return;
+        if (messageElement.querySelector(".worldinfo-viewer-btn")) return;
 
-    const button = document.createElement("div");
-    button.className = "worldinfo-viewer-btn mes_button";
-    button.innerHTML = '<i class="fa-solid fa-book"></i>';
-    button.title = "查看觸發的世界書";
-    
-    button.addEventListener("click", () => showWorldInfoPopup(messageId));
+        const button = document.createElement("div");
+        button.className = "worldinfo-viewer-btn mes_button";
+        button.innerHTML = '<i class="fa-solid fa-book"></i>';
+        button.title = "查看觸發的世界書";
 
-    const buttonContainer = messageElement.querySelector(".mes_buttons");
-    if (buttonContainer) {
-        buttonContainer.appendChild(button);
-    }
+        button.addEventListener("click", () => showWorldInfoPopup(messageId));
+
+        // 找到訊息右側的按鈕容器並插入我們的按鈕
+        const buttonContainer = messageElement.querySelector(".mes_buttons");
+        if (buttonContainer) {
+            buttonContainer.prepend(button); // 使用 prepend 讓它出現在最左邊
+        }
+    }, 100); // 100毫秒的延遲，增加穩定性
 }
 
 async function showWorldInfoPopup(messageId) {
@@ -110,14 +101,10 @@ async function showWorldInfoPopup(messageId) {
         return;
     }
 
-    const html = await renderExtensionTemplateAsync(
-        "third-party/worldinfo-viewer",
-        "popup",
-        data
-    );
+    const html = await renderExtensionTemplateAsync("worldinfo-viewer", "popup", data);
 
-    callGenericPopup(html, POPUP_TYPE.TEXT, "", { 
-        wide: true, 
+    callGenericPopup(html, POPUP_TYPE.TEXT, "已觸發的世界書", {
+        wide: true,
         large: true,
         okButton: "關閉",
         allowVerticalScrolling: true
@@ -126,5 +113,5 @@ async function showWorldInfoPopup(messageId) {
 
 // 初始化擴充
 jQuery(async () => {
-    console.log("世界書觸發檢視器擴充已載入");
+    console.log("世界書觸發檢視器擴充已載入 (v2 - 時序修正)");
 });
