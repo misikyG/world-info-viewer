@@ -1,17 +1,7 @@
-import { eventSource, event_types } from '../../script.js';
+import { eventSource, event_types } from '../../../script.js';
 
-(function () {
-    console.log("World Info Viewer: Script loaded. Attaching event listeners...");
+// 如果上面這行 import 成功，下面這行 console.log 就會執行。
+// 如果 import 失敗，整個腳本都不會執行，你會在 console 看到跟之前一樣的錯誤。
+console.log("World Info Viewer (v3): 核心模組導入成功！擴充已準備就緒。");
 
-    // 監聽世界書觸發事件
-    eventSource.on(event_types.WORLD_INFO_ACTIVATED, (...args) => {
-        console.log("World Info Viewer: [EVENT] WORLD_INFO_ACTIVATED fired with arguments:", args);
-    });
-
-    // 監聽訊息渲染完成事件
-    eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (...args) => {
-        console.log("World Info Viewer: [EVENT] CHARACTER_MESSAGE_RENDERED fired with arguments:", args);
-    });
-
-    console.log("World Info Viewer: Event listeners attached.");
-})();
+// 一旦這個版本成功，我們再把其他功能加回來。
