@@ -19,7 +19,6 @@
 }
 
 .wi-category {
-    /* 【修改】減少分類之間的距離 */
     margin-bottom: 20px;
 }
 
@@ -38,7 +37,6 @@
     background: var(--background-color-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    /* 【修改】減少每個條目內部的留白和外部的間距 */
     padding: 12px;
     margin-bottom: 12px;
 }
@@ -47,7 +45,6 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    /* 【修改】減少標頭和資訊區的距離 */
     margin-bottom: 8px;
 }
 
@@ -64,13 +61,13 @@
 .wi-entry-info {
     font-size: 0.9em;
     color: var(--text-color-secondary);
-    /* 【修改】減少資訊區和內容區的距離 */
     margin-bottom: 10px;
     padding-left: 32px;
     display: flex;
     flex-direction: column;
-    /* 【修改】減少資訊項目之間的行距 */
     gap: 2px;
+    /* 【新增】將所有子項目靠左對齊 */
+    align-items: flex-start;
 }
 
 .wi-info-item {
@@ -88,7 +85,6 @@
 .wi-entry-content {
     margin-top: 12px;
     padding-left: 32px;
-    /* 【新增】強制內容區塊靠左對齊，解決置中問題 */
     text-align: left;
 }
 
@@ -119,7 +115,6 @@
     color: var(--text-color-secondary);
 }
 
-/* 【新增】為 <details> 折疊元素添加樣式 */
 .wi-details {
     margin-top: 4px;
 }
@@ -132,6 +127,6 @@
 
 .wi-details-content {
     padding-top: 4px;
-    padding-left: 18px; /* 讓內容稍微縮排 */
+    padding-left: 18px;
     color: var(--text-color-secondary);
 }
