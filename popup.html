@@ -14,24 +14,28 @@
                 </div>
                 <div class="wi-entry-info">
                     <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
-
-                    <!-- 【修正點】改為可折疊的 details 標籤 -->
+                    
+                    <!-- 【修改】使用 details 標籤來創建可折疊區塊 -->
                     {{#if keys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">主關鍵字</summary>
-                        <div class="wi-details-content">{{keys}}</div>
-                    </details>
-                    {{/if}}
-                    {{#if secondaryKeys}}
-                    <details class="wi-details">
-                        <summary class="wi-summary">選填過濾器 & 邏輯</summary>
+                        <summary>主關鍵字</summary>
                         <div class="wi-details-content">
-                            <p><b>過濾器：</b>{{secondaryKeys}}</p>
-                            <p><b>邏輯：</b>{{selectiveLogicName}}</p>
+                            <span>{{keys}}</span>
                         </div>
                     </details>
                     {{/if}}
+                    
+                    {{#if secondaryKeys}}
+                    <details class="wi-details">
+                        <summary>選填過濾器</summary>
+                        <div class="wi-details-content">
+                            <span>{{secondaryKeys}}</span>
+                            <div class="wi-info-item" style="margin-top: 4px;"><strong>邏輯：</strong><span>{{selectiveLogicName}}</span></div>
+                        </div>
+                    </details>
+                    {{/if}}
+
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
@@ -42,7 +46,7 @@
         </div>
         {{/if}}
 
-        <!-- (為求簡潔，以下重複的區塊只展示一個，請將此結構套用到所有的分類中) -->
+        <!-- 以下對所有分類重複相同的修改 -->
 
         {{#if characterPrimary}}
         <div class="wi-category">
@@ -55,22 +59,24 @@
                 </div>
                 <div class="wi-entry-info">
                     <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                     {{#if keys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">主關鍵字</summary>
-                        <div class="wi-details-content">{{keys}}</div>
+                        <summary>主關鍵字</summary>
+                        <div class="wi-details-content">
+                            <span>{{keys}}</span>
+                        </div>
                     </details>
                     {{/if}}
                     {{#if secondaryKeys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">選填過濾器 & 邏輯</summary>
+                        <summary>選填過濾器</summary>
                         <div class="wi-details-content">
-                            <p><b>過濾器：</b>{{secondaryKeys}}</p>
-                            <p><b>邏輯：</b>{{selectiveLogicName}}</p>
+                            <span>{{secondaryKeys}}</span>
+                            <div class="wi-info-item" style="margin-top: 4px;"><strong>邏輯：</strong><span>{{selectiveLogicName}}</span></div>
                         </div>
                     </details>
                     {{/if}}
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
@@ -92,22 +98,24 @@
                 </div>
                 <div class="wi-entry-info">
                     <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                     {{#if keys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">主關鍵字</summary>
-                        <div class="wi-details-content">{{keys}}</div>
+                        <summary>主關鍵字</summary>
+                        <div class="wi-details-content">
+                            <span>{{keys}}</span>
+                        </div>
                     </details>
                     {{/if}}
                     {{#if secondaryKeys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">選填過濾器 & 邏輯</summary>
+                        <summary>選填過濾器</summary>
                         <div class="wi-details-content">
-                            <p><b>過濾器：</b>{{secondaryKeys}}</p>
-                            <p><b>邏輯：</b>{{selectiveLogicName}}</p>
+                            <span>{{secondaryKeys}}</span>
+                            <div class="wi-info-item" style="margin-top: 4px;"><strong>邏輯：</strong><span>{{selectiveLogicName}}</span></div>
                         </div>
                     </details>
                     {{/if}}
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
@@ -129,22 +137,24 @@
                 </div>
                 <div class="wi-entry-info">
                     <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                     {{#if keys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">主關鍵字</summary>
-                        <div class="wi-details-content">{{keys}}</div>
+                        <summary>主關鍵字</summary>
+                        <div class="wi-details-content">
+                            <span>{{keys}}</span>
+                        </div>
                     </details>
                     {{/if}}
                     {{#if secondaryKeys}}
                     <details class="wi-details">
-                        <summary class="wi-summary">選填過濾器 & 邏輯</summary>
+                        <summary>選填過濾器</summary>
                         <div class="wi-details-content">
-                            <p><b>過濾器：</b>{{secondaryKeys}}</p>
-                            <p><b>邏輯：</b>{{selectiveLogicName}}</p>
+                            <span>{{secondaryKeys}}</span>
+                            <div class="wi-info-item" style="margin-top: 4px;"><strong>邏輯：</strong><span>{{selectiveLogicName}}</span></div>
                         </div>
                     </details>
                     {{/if}}
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
@@ -166,22 +176,24 @@
                 </div>
                 <div class="wi-entry-info">
                      <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
-                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
-                    {{#if keys}}
-                    <details class="wi-details">
-                        <summary class="wi-summary">主關鍵字</summary>
-                        <div class="wi-details-content">{{keys}}</div>
-                    </details>
-                    {{/if}}
-                    {{#if secondaryKeys}}
-                    <details class="wi-details">
-                        <summary class="wi-summary">選填過濾器 & 邏輯</summary>
-                        <div class="wi-details-content">
-                            <p><b>過濾器：</b>{{secondaryKeys}}</p>
-                            <p><b>邏輯：</b>{{selectiveLogicName}}</p>
-                        </div>
-                    </details>
-                    {{/if}}
+                     {{#if keys}}
+                     <details class="wi-details">
+                         <summary>主關鍵字</summary>
+                         <div class="wi-details-content">
+                             <span>{{keys}}</span>
+                         </div>
+                     </details>
+                     {{/if}}
+                     {{#if secondaryKeys}}
+                     <details class="wi-details">
+                         <summary>選填過濾器</summary>
+                         <div class="wi-details-content">
+                             <span>{{secondaryKeys}}</span>
+                             <div class="wi-info-item" style="margin-top: 4px;"><strong>邏輯：</strong><span>{{selectiveLogicName}}</span></div>
+                         </div>
+                     </details>
+                     {{/if}}
+                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
