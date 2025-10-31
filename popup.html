@@ -14,26 +14,31 @@
         <div class="wi-entries-container">
           {{#each this.entries}}
             <div class="wi-entry">
-              <!-- 條目標題行 -->
+              <!-- 條目標題行：來源 | 世界書 | 條目名稱 | 狀態emoji（尾端） -->
               <div class="wi-entry-header">
                 <div class="wi-title-line">
-                  {{#if ../isDepthBased}}
-                    <!-- 依深度插入：顯示身分和深度 -->
-                    <span class="wi-depth-info">@ {{this.roleDisplay}} 深度{{this.depth}}</span>
-                    <span class="wi-separator">|</span>
-                  {{/if}}
                   <span class="wi-source">{{this.sourceName}}</span>
                   <span class="wi-separator">|</span>
                   <span class="wi-world">{{this.worldName}}</span>
                   <span class="wi-separator">|</span>
                   <span class="wi-entry-name">{{this.entryName}}</span>
                   <span class="wi-separator">|</span>
-                  <span class="wi-emoji">{{this.statusEmoji}}</span>
+                  <span class="wi-status-emoji">{{this.statusEmoji}}</span>
                 </div>
               </div>
               
               <!-- 條目資訊 -->
               <div class="wi-entry-info">
+                <!-- 深度插入位置的角色+深度顯示 -->
+                {{#if ../position === 4}}
+                  {{#if this.roleDisplay}}
+                    <div class="wi-info-item">
+                      <strong>觸發:</strong>
+                      <span>{{this.roleDisplay}} 深度{{this.depth}}</span>
+                    </div>
+                  {{/if}}
+                {{/if}}
+                
                 {{#if this.statusName}}
                   <div class="wi-info-item">
                     <strong>狀態:</strong>
