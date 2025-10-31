@@ -1,28 +1,33 @@
 <div class="worldinfo-viewer-popup">
-  <h3>世界書觸發檢視</h3>
+  <h3>🌍 世界書觸發檢視</h3>
   
   {{#if positions.length}}
     {{#each positions}}
       <div class="wi-position-group">
+        <!-- 插入位置標題 -->
         <h4 class="wi-position-header">
           <span class="wi-emoji">{{this.positionEmoji}}</span>
           <span class="wi-position-name">{{this.positionName}}</span>
         </h4>
         
+        <!-- 該位置下的所有條目 -->
         <div class="wi-entries-container">
           {{#each this.entries}}
             <div class="wi-entry">
+              <!-- 條目標題行：來源 | 世界書 | 條目名稱 | 狀態emoji -->
               <div class="wi-entry-header">
-                <span class="wi-emoji">{{this.statusEmoji}}</span>
                 <div class="wi-title-line">
                   <span class="wi-source">{{this.sourceName}}</span>
                   <span class="wi-separator">|</span>
                   <span class="wi-world">{{this.worldName}}</span>
                   <span class="wi-separator">|</span>
                   <span class="wi-entry-name">{{this.entryName}}</span>
+                  <span class="wi-separator">|</span>
+                  <span class="wi-emoji">{{this.statusEmoji}}</span>
                 </div>
               </div>
               
+              <!-- 條目資訊 -->
               <div class="wi-entry-info">
                 {{#if this.depth}}
                   <div class="wi-info-item">
@@ -46,6 +51,7 @@
                 {{/if}}
               </div>
               
+              <!-- 主關鍵字（摺疊） -->
               {{#if this.keys}}
                 <details class="wi-details">
                   <summary>主關鍵字</summary>
@@ -55,6 +61,7 @@
                 </details>
               {{/if}}
               
+              <!-- 選填過濾器（摺疊） -->
               {{#if this.secondaryKeys}}
                 <details class="wi-details">
                   <summary>選填過濾器</summary>
@@ -68,6 +75,7 @@
                 </details>
               {{/if}}
               
+              <!-- 內容 -->
               <div class="wi-entry-content">
                 <strong>內容:</strong>
                 <pre>{{this.content}}</pre>
