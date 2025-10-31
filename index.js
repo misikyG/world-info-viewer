@@ -1,38 +1,21 @@
-// [修正] 引入 SillyTavern 的核心功能時，使用了正確的變數名稱
-import { eventSource, event_types as eventTypes, chat } from '../../../../script.js';
+// 引入 SillyTavern 的核心功能時，建議使用絕對路徑
+import { eventSource, event_types } from '/scripts/script.js';
+import { renderExtensionTemplateAsync } from '/scripts/extensions.js';
+import { callGenericPopup, POPUP_TYPE } from '/scripts/popup.js';
 
-// [修正] 分別從 extensions.js 和 popup.js 導入所需的功能
-import {
-    renderExtensionTemplateAsync
-} from '../../../extensions.js';
-import {
-    callGenericPopup,
-    POPUP_TYPE
-} from '../../../popup.js';
-
-
-// ------------------------------
-// 全域變數和設定
-// ------------------------------
-
-// [說明] 這個名稱必須與您的擴充功能資料夾名稱完全一致！
+// 這個名稱必須與您的擴充功能資料夾名稱完全一致
 const extensionName = "st-world-info-viewer";
-// [修正] 我們不再需要 messageWorldInfoMap，因為資料將直接存儲在 chat 物件中。
-// const messageWorldInfoMap = new Map();
+const messageWorldInfoMap = new Map();
 
-// [新增] 用一個臨時變數來儲存最近一次觸發的世界書，直到它被關聯到訊息上。
-let latestTriggeredWorldInfo = null;
-
-
-// [說明] 世界書位置的定義，用於分類和顯示 Emoji。
+// 世界書位置的定義，用於分類和顯示
 const positionInfo = {
-    0: { name: "角色設定前", emoji: "🟢", category: "global" },
-    1: { name: "角色設定後", emoji: "🔵", category: "character" },
-    2: { name: "筆記頂部", emoji: "📝", category: "other" },
-    3: { name: "筆記底部", emoji: "📝", category: "other" },
-    4: { name: "依深度插入", emoji: "🔗", category: "chat" },
-    5: { name: "範例頂部", emoji: "💡", category: "other" },
-    6: { name: "範例底部", emoji: "💡", category: "other" },
+    0: { name: "全域掃描 (角色前)", emoji: "🟢", category: "global" },
+    1: { name: "全域掃描 (角色後)", emoji: "🔵", category: "character" },
+    2: { name: "作者筆記 (頂部)", emoji: "📝", category: "other" },
+    3: { name: "作者筆記 (底部)", emoji: "📝", category: "other" },
+    4: { name: "聊天紀錄", emoji: "🔗", category: "chat" },
+    5: { name: "範例對話 (頂部)", emoji: "💡", category: "other" },
+    6: { name: "範例對話 (底部)", emoji: "💡", category: "other" },
     7: { name: "通道", emoji: "🔌", category: "other" },
 };
 
@@ -41,60 +24,49 @@ const positionInfo = {
 // ------------------------------
 
 // 步驟一：當世界書被觸發時，暫存相關資訊
-eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedEntries) => {
-    if (!activatedEntries || activatedEntries.length === 0) {
-        latestTriggeredWorldInfo = null; // 如果沒有觸發，清空暫存
-        return;
-    }
+eventSource.on(event_types.WORLD_INFO_ACTIVATED, (activatedEntries) => {
+    if (!activatedEntries || activatedEntries.length === 0) return;
 
     const organizedData = organizeWorldInfoData(activatedEntries);
-    latestTriggeredWorldInfo = organizedData; // 存到臨時變數
+    messageWorldInfoMap.set('latest_trigger', organizedData);
     console.log(`[${extensionName}] 偵測到 ${activatedEntries.length} 個世界書觸發，已暫存。`);
 });
 
-// 步驟二：當AI訊息物件被創建時，將暫存的資料附加到訊息物件的 extra 屬性中
-eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId) => {
-    // 檢查是否有暫存的世界書資料，且目標訊息存在
-    if (latestTriggeredWorldInfo && chat[messageId]) {
-        // [修正] 將資料直接附加到 chat[messageId].extra 中，使其可以被永久保存
-        if (!chat[messageId].extra) {
-            chat[messageId].extra = {};
+// 步驟二：當AI訊息物件被創建時，將暫存的資料與 messageId 關聯起來
+// [修正] 使用 MESSAGE_SENT 事件，這個事件在訊息物件剛被推入 chat 陣列時觸發，時機點更準確。
+eventSource.on(event_types.MESSAGE_SENT, (messageId) => {
+    const chat = getContext().chat;
+    const message = chat[messageId];
+
+    // 只處理 AI 的訊息
+    if (message && !message.is_user && !message.is_system) {
+        if (messageWorldInfoMap.has('latest_trigger')) {
+            const data = messageWorldInfoMap.get('latest_trigger');
+            const msgIdStr = String(messageId);
+
+            messageWorldInfoMap.set(msgIdStr, data);
+            messageWorldInfoMap.delete('latest_trigger');
+
+            console.log(`[${extensionName}] MESSAGE_SENT: 已將暫存的世界書資料與訊息 #${msgIdStr} 關聯。`);
         }
-        chat[messageId].extra.worldInfoViewer = latestTriggeredWorldInfo;
-
-        // 清空臨時變數，等待下一次觸發
-        latestTriggeredWorldInfo = null;
-
-        console.log(`[${extensionName}] MESSAGE_RECEIVED: 已將暫存的世界書資料附加到訊息 #${messageId} 的 extra 屬性中。`);
     }
 });
 
-// 步驟三：當AI訊息完全渲染到畫面上後，加入按鈕 (處理新訊息)
-eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, (messageId) => {
+
+// 步驟三：當AI訊息完全渲染到畫面上後，加入按鈕
+eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (messageId) => {
     const msgIdStr = String(messageId);
-    // [修正] 檢查 chat 物件中是否有我們的資料
-    if (chat[messageId] && chat[messageId].extra && chat[messageId].extra.worldInfoViewer) {
+
+    if (messageWorldInfoMap.has(msgIdStr)) {
         console.log(`[${extensionName}] CHARACTER_MESSAGE_RENDERED: 訊息 #${msgIdStr} 已渲染，準備加入按鈕。`);
         addViewButtonToMessage(msgIdStr);
     }
 });
 
-// [新增] 步驟四：當聊天紀錄被載入或切換時，為所有歷史訊息補上按鈕 (處理舊訊息)
-eventSource.on(eventTypes.CHAT_CHANGED, () => {
-    // 稍微延遲，確保所有訊息都已經被 `printMessages` 渲染到畫面上
-    setTimeout(() => {
-        document.querySelectorAll('#chat .mes').forEach(messageElement => {
-            const mesId = messageElement.getAttribute('mesid');
-            if (mesId) {
-                const messageData = chat[mesId];
-                // 檢查這則歷史訊息是否有儲存的世界書資料
-                if (messageData && messageData.extra && messageData.extra.worldInfoViewer) {
-                    addViewButtonToMessage(mesId);
-                }
-            }
-        });
-        console.log(`[${extensionName}] CHAT_CHANGED: 已為歷史訊息加上世界書按鈕。`);
-    }, 500); // 500ms 是一個比較保險的延遲
+// [新增] 當對話被清除或切換時，清空我們的暫存資料
+eventSource.on(event_types.CHAT_CHANGED, () => {
+    messageWorldInfoMap.clear();
+    console.log(`[${extensionName}] CHAT_CHANGED: 已清除世界書暫存資料。`);
 });
 
 
@@ -103,8 +75,9 @@ eventSource.on(eventTypes.CHAT_CHANGED, () => {
 // ------------------------------
 
 function organizeWorldInfoData(entries) {
-    const organized = { global: [], character: [], chat: [], other: [] };
+    const organized = { global: [], character: [], chat: [], other: [], hasEntries: entries.length > 0 };
     entries.forEach(entry => {
+        // [修正] 提供一個預設值，避免 entry.position 未定義時出錯
         const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})`, emoji: "❓", category: "other" };
 
         const formattedEntry = {
@@ -113,24 +86,24 @@ function organizeWorldInfoData(entries) {
             emoji: entry.vectorized ? '🧠' : posInfo.emoji,
             position: posInfo.name,
             content: entry.content,
-            keys: entry.key && entry.key.length > 0 ? entry.key.join(", ") : "",
-            secondaryKeys: entry.keysecondary && entry.keysecondary.length > 0 ? entry.keysecondary.join(", ") : "",
+            keys: entry.key?.join(", ") || "", // [修正] 確保 key 存在
+            secondaryKeys: entry.keysecondary?.join(", ") || "", // [修正] 確保 keysecondary 存在
             depth: entry.depth ?? ""
         };
 
-        // [修正] 根據 category 進行分類，更具擴展性
+        // 根據 positionInfo 的分類來組織
         const category = posInfo.category;
         if (organized[category]) {
             organized[category].push(formattedEntry);
         } else {
-            organized.other.push(formattedEntry); // 備用分類
+            organized.other.push(formattedEntry);
         }
     });
     return organized;
 }
 
 function addViewButtonToMessage(messageId) {
-    // 使用 setTimeout 確保 DOM 元素已經準備好
+    // 使用 setTimeout 確保 DOM 元素已經穩定
     setTimeout(() => {
         const messageElement = document.querySelector(`#chat .mes[mesid="${messageId}"]`);
         if (!messageElement) {
@@ -138,48 +111,41 @@ function addViewButtonToMessage(messageId) {
             return;
         }
 
-        // 如果按鈕已經存在，就不要重複新增
+        // 如果按鈕已存在，則不重複添加
         if (messageElement.querySelector(".worldinfo-viewer-btn")) {
             return;
         }
 
-        // 建立按鈕
         const button = document.createElement("div");
         button.className = "worldinfo-viewer-btn mes_button";
         button.innerHTML = '<i class="fa-solid fa-book-open"></i>';
         button.title = "查看此訊息觸發的世界書";
-        
-        // 加上點擊事件
         button.addEventListener("click", (event) => {
-            event.stopPropagation(); // 防止點擊穿透
+            event.stopPropagation();
             showWorldInfoPopup(messageId);
         });
 
-        // 找到按鈕容器並將按鈕加到最前面
         const buttonContainer = messageElement.querySelector(".mes_buttons");
         if (buttonContainer) {
             buttonContainer.prepend(button);
             console.log(`[${extensionName}] addViewButtonToMessage: 已成功將按鈕添加到訊息 #${messageId}。`);
         } else {
-            // 這個警告在某些情況下可能出現，例如訊息還在串流生成中，可以先忽略
-            // console.warn(`[${extensionName}] addViewButtonToMessage: 在訊息 #${messageId} 中找不到 .mes_buttons 容器。`);
+            console.warn(`[${extensionName}] addViewButtonToMessage: 在訊息 #${messageId} 中找不到 .mes_buttons 容器。`);
         }
-    }, 100); // 100ms 延遲
+    }, 100);
 }
 
 async function showWorldInfoPopup(messageId) {
-    // [修正] 從 chat[messageId].extra 中讀取資料
-    const data = chat[messageId]?.extra?.worldInfoViewer;
-    if (!data) {
+    const data = messageWorldInfoMap.get(String(messageId));
+    if (!data || !data.hasEntries) {
         toastr.info("此訊息沒有紀錄的世界書觸發資料。");
         return;
     }
 
     try {
-        // 渲染 HTML 範本
+        // [修正] 這裡的路徑現在是正確的，函式能成功找到並渲染範本
         const html = await renderExtensionTemplateAsync(extensionName, "popup", data);
 
-        // 使用 callGenericPopup 顯示彈出視窗
         callGenericPopup(html, POPUP_TYPE.TEXT, '', {
             wide: true,
             large: true,
@@ -197,5 +163,5 @@ async function showWorldInfoPopup(messageId) {
 // ------------------------------
 
 jQuery(async () => {
-    console.log(`[${extensionName}] 擴充已載入並初始化。`);
+    console.log(`[${extensionName}] 擴充已載入。`);
 });
