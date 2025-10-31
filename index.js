@@ -1,24 +1,27 @@
-// [修正] 引入 SillyTavern 的核心功能，並修正相對路徑
-import { eventSource, event_types as eventTypes } from '../../../scripts/script.js'; 
+// [修正] 引入 SillyTavern 的核心功能時，使用了正確的變數名稱 event_types
+import { eventSource, event_types as eventTypes } from '../../../../script.js';
+
+// [修正] 分別從 extensions.js 和 popup.js 導入所需的功能
 import {
     getContext,
-    renderExtensionTemplateAsync,
+    renderExtensionTemplateAsync
+} from '../../../extensions.js';
+import {
     callGenericPopup,
-} from '../../../scripts/extensions.js';
-// [修正] 直接從 popup.js 引入 POPUP_TYPE
-import { POPUP_TYPE } from '../../../scripts/popup.js'; 
+    POPUP_TYPE
+} from '../../../popup.js';
+
 
 // ------------------------------
 // 全域變數和設定
 // ------------------------------
 
-// [重要] 這個名稱必須與您的擴充功能資料夾名稱完全一致！
-// 例如，如果您的資料夾路徑是 public/extensions/third-party/world-info-viewer/
-// 那這裡就應該是 "world-info-viewer"
-const extensionName = "world-info-viewer"; 
+// [說明] 這個名稱必須與您的擴充功能資料夾名稱完全一致！
+// 假設您的資料夾是 "st-world-info-viewer"，這裡就填寫 "st-world-info-viewer"
+const extensionName = "st-world-info-viewer"; 
 const messageWorldInfoMap = new Map();
 
-// 世界書位置的定義，用於分類和顯示 Emoji
+// [說明] 世界書位置的定義，用於分類和顯示 Emoji。
 const positionInfo = {
     0: { name: "角色設定前", emoji: "🟢", category: "global" },
     1: { name: "角色設定後", emoji: "🔵", category: "character" },
@@ -34,6 +37,7 @@ const positionInfo = {
 // 主要邏輯
 // ------------------------------
 
+// 步驟一：當世界書被觸發時，暫存相關資訊
 eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedEntries) => {
     if (!activatedEntries || activatedEntries.length === 0) return;
 
@@ -42,7 +46,8 @@ eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedEntries) => {
     console.log(`[${extensionName}] 偵測到 ${activatedEntries.length} 個世界書觸發，已暫存。`);
 });
 
-eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, type) => {
+// 步驟二：當AI訊息物件被創建時，將暫存的資料與 messageId 關聯起來
+eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId) => {
     if (messageWorldInfoMap.has('latest_trigger')) {
         const data = messageWorldInfoMap.get('latest_trigger');
         const msgIdStr = String(messageId);
@@ -54,14 +59,13 @@ eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId, type) => {
     }
 });
 
+// 步驟三：當AI訊息完全渲染到畫面上後，加入按鈕
 eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, (messageId) => {
     const msgIdStr = String(messageId);
 
     if (messageWorldInfoMap.has(msgIdStr)) {
         console.log(`[${extensionName}] CHARACTER_MESSAGE_RENDERED: 訊息 #${msgIdStr} 已渲染，準備加入按鈕。`);
         addViewButtonToMessage(msgIdStr);
-    } else {
-        console.log(`[${extensionName}] CHARACTER_MESSAGE_RENDERED: 訊息 #${msgIdStr} 已渲染，但沒有世界書資料。`);
     }
 });
 
@@ -107,7 +111,6 @@ function addViewButtonToMessage(messageId) {
         }
 
         if (messageElement.querySelector(".worldinfo-viewer-btn")) {
-            console.log(`[${extensionName}] addViewButtonToMessage: 訊息 #${messageId} 已存在按鈕，跳過。`);
             return;
         }
 
@@ -125,7 +128,7 @@ function addViewButtonToMessage(messageId) {
             buttonContainer.prepend(button);
             console.log(`[${extensionName}] addViewButtonToMessage: 已成功將按鈕添加到訊息 #${messageId}。`);
         } else {
-            console.warn(`[${extensionName}] addViewButtonToMessage: 在訊息 #${messageId} 中找不到 .mes_buttons 容器，無法添加按鈕。`);
+            console.warn(`[${extensionName}] addViewButtonToMessage: 在訊息 #${messageId} 中找不到 .mes_buttons 容器。`);
         }
     }, 100);
 }
