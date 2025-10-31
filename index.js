@@ -12,7 +12,7 @@ import {
 // 全域變數和設定
 // ------------------------------
 
-const extensionName = "third-party/st-world-info-viewer";
+const extensionName = "third-party\world-info-viewer";
 
 let latestTriggeredWorldInfo = null;
 
