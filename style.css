@@ -123,6 +123,7 @@
     cursor: pointer;
     color: var(--text-color-tertiary);
     font-weight: bold;
+    margin-left: -1.6em;
 }
 
 .wi-details-content {
@@ -131,3 +132,4 @@
     color: var(--text-color-secondary);
     text-align: left;
 }
+
