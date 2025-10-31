@@ -3,7 +3,6 @@ import {
     event_types,
     chat,
     chat_metadata,
-    selected_world_info,
 } from '../../../../script.js';
 
 import {
@@ -223,4 +222,5 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
         });
     }, 500);
 });
+
 
