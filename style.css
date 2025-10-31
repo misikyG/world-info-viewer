@@ -1,0 +1,74 @@
+/* 我們要加到訊息標頭的按鈕 */
+.wi-viewer-button {
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 8px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.wi-viewer-button:hover {
+    opacity: 1;
+}
+
+/* 彈出視窗的整體容器 */
+.wi-viewer-popup {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 10px;
+    text-align: left;
+}
+
+/* 每個分類的標題，例如 "全域世界書" */
+.wi-viewer-popup .wi-category-title {
+    margin-top: 15px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--SmartThemeSubtle);
+    padding-bottom: 5px;
+    font-size: 1.1em;
+    color: var(--SmartThemeEmphasis);
+}
+
+.wi-viewer-popup .wi-category-title:first-child {
+    margin-top: 0;
+}
+
+/* 單個世界書條目的容器 */
+.wi-viewer-popup .wi-entry {
+    background-color: var(--SmartThemeSubtle);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* 條目的標頭，包含書名、條目名和表情符號 */
+.wi-viewer-popup .wi-entry-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* 條目的詳細資訊，如關鍵字和插入位置 */
+.wi-viewer-popup .wi-entry-details {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.wi-viewer-popup .wi-entry-details code {
+    background-color: var(--SmartThemeCode);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* 條目的內容 */
+.wi-viewer-popup .wi-entry-content {
+    background-color: var(--SmartThemeChat);
+    border: 1px solid var(--SmartThemeChatBorder);
+    border-radius: 5px;
+    padding: 8px;
+    white-space: pre-wrap; /* 保持換行和空格 */
+    word-break: break-word;
+    font-size: 0.95em;
+    max-height: 200px;
+    overflow-y: auto;
+}
