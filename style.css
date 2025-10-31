@@ -9,68 +9,105 @@
 }
 
 .worldinfo-viewer-popup {
-    max-height: 70vh;
-    overflow-y: auto;
-    padding: 10px;
+    font-size: 14px;
+    padding: 5px 15px;
+}
+
+.worldinfo-viewer-popup h3 {
+    text-align: center;
+    color: var(--text-color);
 }
 
 .wi-category {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .wi-category h4 {
-    color: #4a9eff;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #4a9eff;
-    padding-bottom: 5px;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--primary-color-shadow);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
 }
 
 .wi-entry {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--background-color-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
 }
 
 .wi-entry-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .wi-emoji {
-    font-size: 1.2em;
+    font-size: 1.4em;
 }
 
 .wi-title {
     font-weight: bold;
-    color: #fff;
+    color: var(--text-color);
+    font-size: 1.1em;
 }
 
 .wi-entry-info {
     font-size: 0.9em;
-    color: #aaa;
-    margin-bottom: 8px;
+    color: var(--text-color-secondary);
+    margin-bottom: 12px;
+    padding-left: 32px; /* 對齊標題 */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.wi-entry-info > div {
-    margin: 4px 0;
+.wi-info-item {
+    display: flex;
+}
+.wi-info-item strong {
+    flex-shrink: 0;
+    margin-right: 8px;
+    color: var(--text-color-tertiary);
+}
+.wi-info-item span {
+    color: var(--text-color-secondary);
 }
 
 .wi-entry-content {
-    margin-top: 8px;
+    margin-top: 12px;
+    padding-left: 32px; /* 對齊標題 */
+}
+
+.wi-entry-content strong {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color-tertiary);
 }
 
 .wi-entry-content pre {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px;
+    background: var(--background-color-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 10px;
     border-radius: 4px;
     white-space: pre-wrap;
     word-wrap: break-word;
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
+    font-size: 0.95em;
+    color: var(--text-color-secondary);
 }
 
-
+.wi-no-entries {
+    text-align: center;
+    padding: 20px;
+    background: var(--background-color-secondary);
+    border-radius: 8px;
+    color: var(--text-color-secondary);
+}
