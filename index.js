@@ -1,195 +1,162 @@
-import { eventSource, event_types as eventTypes, chat, selected_world_info, characters, this_chid, world_info, chat_metadata, power_user } from '../../../../script.js';
-import {
-    renderExtensionTemplateAsync
-} from '../../../extensions.js';
-import {
-    callGenericPopup,
-    POPUP_TYPE
-} from '../../../popup.js';
-
-// ------------------------------
-// 全域變數和設定
-// ------------------------------
+import { eventSource, event_types as eventTypes, chat } from '../../../../script.js';
+import { renderExtensionTemplateAsync } from '../../../extensions.js';
+import { callGenericPopup, POPUP_TYPE } from '../../../popup.js';
 
 const extensionName = "third-party/world-info-viewer";
-
 let latestTriggeredWorldInfo = null;
 
-// 插入位置的資訊（維持不變，用於顯示文字）
 const positionInfo = {
-    0: { name: "角色設定前", emoji: "📝" },
-    1: { name: "角色設定後", emoji: "📝" },
-    2: { name: "筆記頂部", emoji: "📝" },
-    3: { name: "筆記底部", emoji: "📝" },
-    4: { name: "依深度插入", emoji: "🔗" },
-    5: { name: "範例頂部", emoji: "💡" },
-    6: { name: "範例底部", emoji: "💡" },
-    7: { name: "通道", emoji: "🔌" },
+    0: { name: "角色設定前", emoji: "📄", position: "before" },
+    1: { name: "角色設定後", emoji: "📄", position: "after" },
+    2: { name: "作者註釋頂部", emoji: "📝", position: "ANTop" },
+    3: { name: "作者註釋底部", emoji: "📝", position: "ANBottom" },
+    4: { name: "依深度插入", emoji: "🔗", position: "atDepth" },
+    5: { name: "範例頂部", emoji: "💡", position: "EMTop" },
+    6: { name: "範例底部", emoji: "💡", position: "EMBottom" },
+    7: { name: "outlet", emoji: "➡️", position: "outlet" },
 };
 
-// ------------------------------
-// 主要邏輯
-// ------------------------------
+// 世界書分類常數
+const WI_CATEGORY = {
+    GLOBAL: '🌐全域世界書',
+    CHARACTER_PRIMARY: '👤角色主要知識書',
+    CHARACTER_EXTRA: '👤角色額外知識書',
+    CHAT: '🗣️角色聊天知識書',
+};
 
-eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedEntries) => {
-    if (!activatedEntries || activatedEntries.length === 0) {
-        latestTriggeredWorldInfo = null;
-        return;
+// 世界書條目狀態判定函數
+function getEntryStatus(entry) {
+
+    if (entry.constant === true) {
+        return { emoji: '🔵', name: '恆定', type: 'constant' };
+    } else if (entry.vectorized === true) {
+        return { emoji: '🔗', name: '向量', type: 'vectorized' };
+    } else {
+        return { emoji: '🟢', name: '關鍵字', type: 'keyword' };
     }
+}
 
-    const organizedData = organizeWorldInfoData(activatedEntries);
-    latestTriggeredWorldInfo = organizedData;
-    console.log(`[${extensionName}] 偵測到 ${activatedEntries.length} 個世界書觸發，已暫存。`);
-});
-
-eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId) => {
-    if (latestTriggeredWorldInfo && chat[messageId]) {
-        if (!chat[messageId].extra) {
-            chat[messageId].extra = {};
-        }
-        chat[messageId].extra.worldInfoViewer = latestTriggeredWorldInfo;
-        latestTriggeredWorldInfo = null;
-        console.log(`[${extensionName}] MESSAGE_RECEIVED: 已將暫存的世界書資料附加到訊息 #${messageId} 的 extra 屬性中。`);
-    }
-});
-
-eventSource.on(eventTypes.CHARACTER_MESSAGE_RENDERED, (messageId) => {
-    const msgIdStr = String(messageId);
-    if (chat[messageId] && chat[messageId].extra && chat[messageId].extra.worldInfoViewer) {
-        console.log(`[${extensionName}] CHARACTER_MESSAGE_RENDERED: 訊息 #${msgIdStr} 已渲染，準備加入按鈕。`);
-        addViewButtonToMessage(msgIdStr);
-    }
-});
-
-eventSource.on(eventTypes.CHAT_CHANGED, () => {
-    setTimeout(() => {
-        document.querySelectorAll('#chat .mes').forEach(messageElement => {
-            const mesId = messageElement.getAttribute('mesid');
-            if (mesId) {
-                const messageData = chat[mesId];
-                if (messageData && messageData.extra && messageData.extra.worldInfoViewer) {
-                    addViewButtonToMessage(mesId);
-                }
-            }
-        });
-        console.log(`[${extensionName}] CHAT_CHANGED: 已為歷史訊息加上世界書按鈕。`);
-    }, 500);
-});
-
-// ------------------------------
-// 輔助函式
-// ------------------------------
-
-/**
- * @param {import('../../../../world-info.js').WIEntryFieldDefinition[]} entries
- */
-function organizeWorldInfoData(entries) {
-    // 【修改】增加新的分類
-    const organized = { global: [], characterPrimary: [], characterExtra: [], chat: [], persona: [], other: [] };
-
-    // 【修改】獲取當前角色的資訊，以便判斷世界書類型
-    const character = characters[this_chid];
-    const charFileName = character ? `${character.name}_${character.avatar.replace('.png', '')}` : null;
-    const charExtraLoreBooks = charFileName ? world_info.charLore?.find(e => e.name === charFileName)?.extraBooks ?? [] : [];
-
-    entries.forEach(entry => {
-        const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})` };
-
-        // 【修改】核心分類邏輯
-        let category = 'other';
-        if (selected_world_info.includes(entry.world)) {
-            category = 'global';
-        } else if (character && character.data?.extensions?.world === entry.world) {
-            category = 'characterPrimary';
-        } else if (charExtraLoreBooks.includes(entry.world)) {
-            category = 'characterExtra';
-        } else if (chat_metadata.world_info === entry.world) {
-            category = 'chat';
-        } else if (power_user.persona_description_lorebook === entry.world) {
-            category = 'persona';
+// 世界書分類判定函數
+function getWICategory(entry, worldBookName) {
+    
+    if (entry.scopeToChar === false || entry.scopeToChar === null) {
+        return WI_CATEGORY.GLOBAL;
+    } else if (entry.scopeToChar === true) {
+        
+        if (entry.position === 4) { // atDepth
+            return WI_CATEGORY.CHAT;
         }
         
-        // 【修改】Emoji 判定邏輯
-        // 順序：恆定 > 向量 > 一般
-        const emoji = entry.constant ? '🟢' : (entry.vectorized ? '🔗' : '🔵');
-
-        const formattedEntry = {
-            worldName: entry.world,
-            entryName: entry.comment || `條目 ${entry.uid}`,
-            emoji: emoji,
-            position: posInfo.name,
-            content: entry.content,
-            keys: entry.key && entry.key.length > 0 ? entry.key.join(", ") : "",
-            secondaryKeys: entry.keysecondary && entry.keysecondary.length > 0 ? entry.keysecondary.join(", ") : "",
-            depth: entry.depth ?? ""
-        };
-
-        if (organized[category]) {
-            organized[category].push(formattedEntry);
-        } else {
-            organized.other.push(formattedEntry);
-        }
-    });
-    return organized;
+        return WI_CATEGORY.CHARACTER_PRIMARY;
+    }
+    
+    return WI_CATEGORY.CHARACTER_PRIMARY;
 }
 
-
-function addViewButtonToMessage(messageId) {
-    setTimeout(() => {
-        const messageElement = document.querySelector(`#chat .mes[mesid="${messageId}"]`);
-        if (!messageElement) {
-            console.error(`[${extensionName}] addViewButtonToMessage: 找不到 ID 為 ${messageId} 的訊息元素。`);
-            return;
-        }
-
-        if (messageElement.querySelector(".worldinfo-viewer-btn")) {
-            return;
-        }
-
-        const button = document.createElement("div");
-        button.className = "worldinfo-viewer-btn mes_button";
-        button.innerHTML = '<i class="fa-solid fa-book-open"></i>';
-        button.title = "查看此訊息觸發的世界書";
-
-        button.addEventListener("click", (event) => {
-            event.stopPropagation();
-            showWorldInfoPopup(messageId);
-        });
-
-        const buttonContainer = messageElement.querySelector(".mes_buttons");
-        if (buttonContainer) {
-            buttonContainer.prepend(button);
-            console.log(`[${extensionName}] addViewButtonToMessage: 已成功將按鈕添加到訊息 #${messageId}。`);
-        }
-    }, 100);
-}
-
-async function showWorldInfoPopup(messageId) {
-    const data = chat[messageId]?.extra?.worldInfoViewer;
-    if (!data) {
-        toastr.info("此訊息沒有紀錄的世界書觸發資料。");
+// 主事件監聽器
+eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedData) => {
+    console.debug('[WI Viewer] World Info Activated Event:', activatedData);
+    
+    const entries = activatedData?.entries;
+    if (!entries || entries.length === 0) {
+        console.debug('[WI Viewer] No entries to process');
         return;
     }
 
-    try {
-        const html = await renderExtensionTemplateAsync(extensionName, "popup", data);
+    // 按分類組織條目
+    const categorizedEntries = {
+        [WI_CATEGORY.GLOBAL]: [],
+        [WI_CATEGORY.CHARACTER_PRIMARY]: [],
+        [WI_CATEGORY.CHARACTER_EXTRA]: [],
+        [WI_CATEGORY.CHAT]: [],
+    };
 
-        callGenericPopup(html, POPUP_TYPE.TEXT, '', {
-            wide: true,
-            large: true,
-            okButton: "關閉",
-            allowVerticalScrolling: true
+    entries.forEach(entry => {
+        const category = getWICategory(entry, activatedData.worldBook);
+        const status = getEntryStatus(entry);
+        const position = positionInfo[entry.position] || positionInfo[0];
+        
+        categorizedEntries[category].push({
+            ...entry,
+            statusEmoji: status.emoji,
+            statusName: status.name,
+            statusType: status.type,
+            positionInfo: position,
+            displayName: entry.key?.join(', ') || 'Unknown',
         });
-    } catch (error) {
-        console.error(`[${extensionName}] 渲染彈窗時發生錯誤:`, error);
-        toastr.error("無法渲染世界書彈窗，請檢查主控台日誌。");
+    });
+
+    latestTriggeredWorldInfo = {
+        timestamp: new Date().toLocaleTimeString(),
+        categorized: categorizedEntries,
+        raw: activatedData,
+    };
+
+    console.debug('[WI Viewer] Processed World Info:', latestTriggeredWorldInfo);
+});
+
+// 生成彈出窗口內容
+function generatePopupContent() {
+    if (!latestTriggeredWorldInfo) {
+        return '<p>尚未捕捉到世界書觸發</p>';
     }
+
+    let html = `<h3>世界書觸發檢視器</h3>`;
+    html += `<small style="color: var(--text-color-secondary);">${latestTriggeredWorldInfo.timestamp}</small>`;
+
+    for (const [category, entries] of Object.entries(latestTriggeredWorldInfo.categorized)) {
+        if (entries.length === 0) continue;
+
+        html += `
+            <div class="wi-category">
+                <h4>${category}</h4>
+                ${entries.map(entry => `
+                    <div class="wi-entry">
+                        <div class="wi-entry-header">
+                            <span class="wi-emoji">${entry.statusEmoji}</span>
+                            <span class="wi-title">${entry.displayName}</span>
+                        </div>
+                        <div class="wi-entry-info">
+                            <p><strong>世界書名：</strong>${latestTriggeredWorldInfo.raw.worldBook}</p>
+                            <p><strong>狀態：</strong>${entry.statusName}</p>
+                            <p><strong>插入位置：</strong>${entry.positionInfo.emoji} ${entry.positionInfo.name}</p>
+                            ${entry.key ? `<p><strong>主鍵字：</strong>${entry.key.join(', ')}</p>` : ''}
+                            ${entry.keysecondary?.length ? `<p><strong>副鍵字：</strong>${entry.keysecondary.join(', ')}</p>` : ''}
+                            ${entry.filter?.length ? `<p><strong>過濾器：</strong>${entry.filter}</p>` : ''}
+                        </div>
+                        <div class="wi-entry-content">
+                            <strong>內容預覽：</strong>
+                            <pre>${entry.content?.substring(0, 200)}${entry.content?.length > 200 ? '...' : ''}</pre>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    return html;
 }
 
-// ------------------------------
-// 擴充初始化
-// ------------------------------
+// 添加查看按鈕
+eventSource.on(eventTypes.MESSAGE_SENT, () => {
 
-jQuery(async () => {
-    console.log(`[${extensionName}] 擴充已載入並初始化。`);
+    setTimeout(() => {
+        const chatMessages = document.querySelectorAll('.mes');
+        const lastMessage = chatMessages[chatMessages.length - 1];
+        
+        if (lastMessage && !lastMessage.querySelector('.worldinfo-viewer-btn')) {
+            const button = document.createElement('button');
+            button.className = 'worldinfo-viewer-btn';
+            button.innerHTML = '🌍';
+            button.title = '查看此回覆觸發的世界書';
+            button.onclick = (e) => {
+                e.stopPropagation();
+                const popupContent = generatePopupContent();
+                callGenericPopup(popupContent, POPUP_TYPE.TEXT, '', { wide: true, large: true });
+            };
+            
+            const messageActions = lastMessage.querySelector('.mes_actions') || lastMessage;
+            messageActions.appendChild(button);
+        }
+    }, 100);
 });
