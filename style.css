@@ -63,14 +63,9 @@
 /* ===== 條目標題行 ===== */
 .wi-entry-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   margin-bottom: 10px;
-}
-
-.wi-emoji {
-  font-size: 1.4em;
-  flex-shrink: 0;
 }
 
 .wi-title-line {
@@ -79,12 +74,7 @@
   align-items: center;
   gap: 6px;
   flex: 1;
-}
-
-.wi-depth-info {
-  font-weight: bold;
-  color: var(--primary-color);
-  font-style: italic;
+  font-size: 1em;
 }
 
 .wi-source {
@@ -100,6 +90,12 @@
 .wi-entry-name {
   color: var(--text-color);
   font-style: italic;
+}
+
+.wi-status-emoji {
+  font-size: 1.1em;
+  margin-left: 4px;
+  flex-shrink: 0;
 }
 
 .wi-separator {
@@ -133,6 +129,7 @@
 
 .wi-info-item span {
   color: var(--text-color-secondary);
+  font-weight: 500;
 }
 
 /* ===== 摺疊詳情 ===== */
