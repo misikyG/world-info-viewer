@@ -39,17 +39,8 @@ const positionInfo = {
   7: { name: "Outlet", emoji: "➡️" },
 };
 
-// 位置對應的固定排序優先級
-const positionOrder = {
-  0: 0,  // 角色設定前
-  1: 1,  // 角色設定後
-  2: 2,  // 作者註釋頂部
-  3: 3,  // 作者註釋底部
-  5: 4,  // 範例頂部
-  6: 5,  // 範例底部
-  4: 6,  // 依深度插入
-  7: 7,  // Outlet
-};
+// 大分類的全局優先級順序
+const POSITION_PRIORITY_ORDER = [0, 1, 2, 3, 5, 6, 4, 7];
 
 // 選擇邏輯對應表
 const selectiveLogicInfo = {
@@ -88,7 +79,7 @@ function getEntryStatus(entry) {
 }
 
 /**
- * 確定世界書的來源
+ * 確定世界書的來源（全域/角色主要/角色額外/聊天）
  */
 function getWISourceKey(entry) {
   const worldName = entry.world;
@@ -116,6 +107,7 @@ function getWISourceKey(entry) {
     return WI_SOURCE_KEYS.GLOBAL;
   }
 
+  // 無效來源返回 null
   return null;
 }
 
@@ -134,6 +126,7 @@ function getSourceDisplayName(sourceKey) {
 
 /**
  * 獲取條目的來源類型（AI助手/使用者/系統）
+ * 用於同深度排序
  */
 function getEntrySourceType(entry) {
   if (entry.role === 'assistant' || entry.excludeRoles?.includes('assistant') === false) {
@@ -149,75 +142,61 @@ function getEntrySourceType(entry) {
 }
 
 /**
- * 獲取世界書的順序值
- */
-function getWorldOrder(worldName) {
-  if (world_info.lorebookReplace) {
-    const book = world_info.lorebookReplace.find(b => b.name === worldName);
-    if (book && typeof book.order === 'number') {
-      return book.order;
-    }
-  }
-  
-  if (Array.isArray(world_info) && world_info.find) {
-    const book = world_info.find(b => b.name === worldName);
-    if (book && typeof book.order === 'number') {
-      return book.order;
-    }
-  }
-  
-  return Infinity;
-}
-
-/**
  * 排序比較函數
  * 
- * 優先級規則：
- * 1. 位置類型（固定順序：角色設定前 > ... > Outlet）
- * 2. 世界書順序（order 小的優先）**【最重要】**
- * 3. 如果位置是「依深度插入」(位置 4)：
- *    3a. 深度（大的優先）
- *    3b. 角色類型（AI > 使用者 > 系統）
+ * 優先級：
+ * 1. 大分類優先度（固定順序）
+ * 2. 同分類內：
+ *    - 對於位置 0, 1, 2, 3, 5, 6, 7：按 order 值排序（小→大）
+ *    - 對於位置 4（依深度插入）：
+ *      a. 按深度排序（大→小）
+ *      b. 同深度按角色類型排序（AI > 使用者 > 系統）
  */
 function compareEntries(entryA, entryB) {
-  // 優先級 1：位置類型固定順序
   const posA = entryA.position ?? 4;
   const posB = entryB.position ?? 4;
-  const posOrderA = positionOrder[posA] ?? 999;
-  const posOrderB = positionOrder[posB] ?? 999;
-  const posDiff = posOrderA - posOrderB;
-  if (posDiff !== 0) {
-    return posDiff;
+  
+  // 優先級 1：大分類優先度
+  const priorityA = POSITION_PRIORITY_ORDER.indexOf(posA);
+  const priorityB = POSITION_PRIORITY_ORDER.indexOf(posB);
+  const priorityDiff = priorityA - priorityB;
+  
+  if (priorityDiff !== 0) {
+    return priorityDiff;
   }
-
-  // 優先級 2：世界書順序（order 小的優先）【關鍵】
-  const worldOrderA = getWorldOrder(entryA.world);
-  const worldOrderB = getWorldOrder(entryB.world);
-  const worldOrderDiff = worldOrderA - worldOrderB;
-  if (worldOrderDiff !== 0) {
-    return worldOrderDiff;
-  }
-
-  // 優先級 3：如果都是「依深度插入」才考慮深度
-  if (posA === 4 && posB === 4) {
-    // 3a：深度排序（大的優先）
-    const depthDiff = (entryB.depth ?? -Infinity) - (entryA.depth ?? -Infinity);
+  
+  // 優先級 2：同分類內排序
+  // 對於「依深度插入」(位置 4)，使用深度排序
+  if (posA === 4) {
+    // 按深度排序（大→小）
+    const depthDiff = (entryB.depth ?? 0) - (entryA.depth ?? 0);
     if (depthDiff !== 0) {
       return depthDiff;
     }
-
-    // 3b：同深度按角色類型排序（AI > 使用者 > 系統）
+    
+    // 同深度按角色類型排序（AI > 使用者 > 系統）
     const sourceTypeDiff = getEntrySourceType(entryB) - getEntrySourceType(entryA);
     if (sourceTypeDiff !== 0) {
       return sourceTypeDiff;
     }
+  } else {
+    // 其他位置按 order 值排序（小→大）
+    const orderA = entryA.order ?? 0;
+    const orderB = entryB.order ?? 0;
+    const orderDiff = orderA - orderB;
+    
+    if (orderDiff !== 0) {
+      return orderDiff;
+    }
   }
-
+  
+  // 最後備用排序（不重要）
   return 0;
 }
 
 /**
  * 處理世界書資料
+ * 改革後的結構：按插入位置分組，每組內按對應規則排序
  */
 function processWorldInfoData(activatedEntries) {
   // 過濾無效的來源
@@ -234,14 +213,11 @@ function processWorldInfoData(activatedEntries) {
     return true;
   });
 
-  // 先排序所有條目
-  validEntries.sort(compareEntries);
-
-  // 然後按位置類型分組
+  // 第一步：按插入位置分組
   const byPosition = {};
   
   validEntries.forEach(entry => {
-    const position = entry.position ?? 4;
+    const position = entry.position ?? 4; // 預設為「依深度插入」
     const posInfo = positionInfo[position] || { name: `未知位置 (${position})`, emoji: '❓' };
     const posKey = `pos_${position}`;
 
@@ -250,7 +226,6 @@ function processWorldInfoData(activatedEntries) {
         position: position,
         positionName: posInfo.name,
         positionEmoji: posInfo.emoji,
-        positionOrder: positionOrder[position] ?? 999,
         entries: [],
       };
     }
@@ -258,10 +233,8 @@ function processWorldInfoData(activatedEntries) {
     const status = getEntryStatus(entry);
     const sourceKey = getWISourceKey(entry);
     const hasSecondaryKeys = entry.keysecondary && entry.keysecondary.length > 0;
-    const showDepthInfo = position === 4;
 
     const processedEntry = {
-      uid: entry.uid,
       worldName: entry.world,
       entryName: entry.comment || `條目 #${entry.uid}`,
       sourceKey: sourceKey,
@@ -272,19 +245,32 @@ function processWorldInfoData(activatedEntries) {
       keys: entry.key?.join(', ') || null,
       secondaryKeys: hasSecondaryKeys ? entry.keysecondary.join(', ') : null,
       selectiveLogicName: hasSecondaryKeys ? (selectiveLogicInfo[entry.selectiveLogic] ?? `未知邏輯 (${entry.selectiveLogic})`) : null,
-      depth: showDepthInfo ? (entry.depth ?? null) : null,
-      role: showDepthInfo ? (entry.role || 'assistant') : null,
-      showDepthInfo: showDepthInfo,
+      depth: entry.depth ?? null,
+      role: entry.role || 'assistant',
       position: position,
-      worldOrder: getWorldOrder(entry.world),
+      order: entry.order ?? 0,
+      // 用於排序
+      _sortDepth: entry.depth ?? 0,
+      _sortOrder: entry.order ?? 0,
+      _sortRole: getEntrySourceType(entry),
     };
 
     byPosition[posKey].entries.push(processedEntry);
   });
 
-  // 按位置優先級排列分組
-  const sorted = Object.values(byPosition).sort((a, b) => a.positionOrder - b.positionOrder);
+  // 第二步：每個位置內部按對應規則排序
+  Object.values(byPosition).forEach(posGroup => {
+    posGroup.entries.sort(compareEntries);
+  });
 
+  // 第三步：按大分類優先度排列所有位置組
+  const sorted = Object.values(byPosition).sort((a, b) => {
+    const priorityA = POSITION_PRIORITY_ORDER.indexOf(a.position);
+    const priorityB = POSITION_PRIORITY_ORDER.indexOf(b.position);
+    return priorityA - priorityB;
+  });
+
+  console.log('[WI-Viewer] 最終排序結果:', sorted);
   return sorted;
 }
 
@@ -362,7 +348,7 @@ eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
   }
 });
 
-// 監聽訊息接收事件
+// 監聽訊息接收事件，將最後觸發的世界書資料附加到訊息
 eventSource.on(event_types.MESSAGE_RECEIVED, (messageId) => {
   if (lastActivatedWorldInfo && chat[messageId] && !chat[messageId].is_user) {
     if (!chat[messageId].extra) {
@@ -373,12 +359,12 @@ eventSource.on(event_types.MESSAGE_RECEIVED, (messageId) => {
   }
 });
 
-// 監聽訊息渲染事件
+// 監聽訊息渲染事件，為新渲染的訊息添加按鈕
 eventSource.on(event_types.CHARACTER_MESSAGE_RENDERED, (messageId) => {
   addViewButtonToMessage(String(messageId));
 });
 
-// 監聽聊天變更事件
+// 監聽聊天變更事件，為所有現有訊息添加按鈕
 eventSource.on(event_types.CHAT_CHANGED, () => {
   setTimeout(() => {
     document.querySelectorAll('#chat .mes').forEach(messageElement => {
