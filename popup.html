@@ -97,6 +97,11 @@
                     <span class="wi-title">{{worldName}} / {{entryName}}</span>
                 </div>
                 <div class="wi-entry-info">
+                     <!-- 【修正點】在 "其他" 類別中補上狀態顯示 -->
+                     <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
+                     {{#if keys}}
+                     <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
+                     {{/if}}
                      <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
