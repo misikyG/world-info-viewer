@@ -117,13 +117,15 @@
 .wi-details {
     margin-top: 4px;
     width: 100%;
+    text-align: left;
 }
 
 .wi-details summary {
     cursor: pointer;
     color: var(--text-color-tertiary);
     font-weight: bold;
-    margin-left: -1.6em;
+    text-align: left;
+    padding-left: 0;
 }
 
 .wi-details-content {
@@ -132,4 +134,3 @@
     color: var(--text-color-secondary);
     text-align: left;
 }
-
