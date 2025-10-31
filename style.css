@@ -18,15 +18,16 @@
     color: var(--text-color);
 }
 
+/* --- 緊湊佈局調整 --- */
 .wi-category {
-    margin-bottom: 25px;
+    margin-bottom: 20px; /* 原為 25px */
 }
 
 .wi-category h4 {
     color: var(--primary-color);
-    margin-bottom: 12px;
+    margin-bottom: 10px; /* 原為 12px */
     border-bottom: 1px solid var(--primary-color-shadow);
-    padding-bottom: 8px;
+    padding-bottom: 6px; /* 原為 8px */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -37,15 +38,15 @@
     background: var(--background-color-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
+    padding: 12px; /* 原為 15px */
+    margin-bottom: 12px; /* 原為 15px */
 }
 
 .wi-entry-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* 原為 10px */
 }
 
 .wi-emoji {
@@ -61,8 +62,9 @@
 .wi-entry-info {
     font-size: 0.9em;
     color: var(--text-color-secondary);
-    margin-bottom: 12px;
-    /* 【修正點】移除 padding-left: 32px; */
+    margin-bottom: 10px; /* 原為 12px */
+    /* 【修正點】移除左側內距，使其靠左對齊 */
+    /* padding-left: 32px; */
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -81,8 +83,9 @@
 }
 
 .wi-entry-content {
-    margin-top: 12px;
-    /* 【修正點】移除 padding-left: 32px; */
+    margin-top: 10px; /* 原為 12px */
+    /* 【修正點】移除左側內距，使其靠左對齊 */
+    /* padding-left: 32px; */
 }
 
 .wi-entry-content strong {
@@ -110,4 +113,50 @@
     background: var(--background-color-secondary);
     border-radius: 8px;
     color: var(--text-color-secondary);
+}
+
+/* --- 新增：可折疊關鍵字區域樣式 --- */
+.wi-details {
+    margin-top: 4px;
+}
+
+.wi-summary {
+    cursor: pointer;
+    color: var(--text-color-tertiary);
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 自訂的折疊圖示 */
+.wi-summary::before {
+    content: '▶';
+    font-size: 0.8em;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.wi-details[open] > .wi-summary::before {
+    transform: rotate(90deg);
+}
+
+.wi-details-content {
+    margin-top: 6px;
+    padding: 8px 12px;
+    background: var(--background-color-tertiary);
+    border-radius: 4px;
+    color: var(--text-color-secondary);
+    word-wrap: break-word;
+    font-size: 0.95em;
+}
+
+.wi-details-content p {
+    margin: 0 0 4px 0;
+}
+.wi-details-content p:last-child {
+    margin-bottom: 0;
+}
+.wi-details-content b {
+    color: var(--text-color-tertiary);
 }
