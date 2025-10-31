@@ -3,6 +3,9 @@ import {
     eventSource,
     event_types,
     chat,
+    // 【新增】導入目前聊天元數據、啟用的世界書清單
+    chat_metadata,
+    selected_world_info,
 } from '../../../../script.js';
 
 import {
@@ -13,6 +16,9 @@ import {
     callGenericPopup,
     POPUP_TYPE
 } from '../../../popup.js';
+
+// 【新增】從 world-info.js 導入元數據鍵名
+import { METADATA_KEY } from '../../../world-info.js';
 
 
 // 透過 import.meta.url 動態取得擴充路徑
@@ -36,7 +42,7 @@ const WI_CATEGORY_KEYS = {
     GLOBAL: 'global',
     CHARACTER: 'character',
     CHAT: 'chat',
-    OTHER: 'other',
+    OTHER: 'other', // 保留以防萬一
 };
 
 /**
@@ -55,19 +61,30 @@ function getEntryStatus(entry) {
 }
 
 /**
+ * 【修正點】重寫分類邏輯，使其符合 SillyTavern 的判斷方式
  * 判斷條目屬於哪個分類
  * @param {object} entry - 知識書條目
  * @returns {string} - 分類鍵名 (e.g., 'global', 'character')
  */
 function getWICategoryKey(entry) {
-    if (entry.scopeToChar === false) {
-        return WI_CATEGORY_KEYS.GLOBAL;
-    }
-    if (entry.position === 4) {
+    // 1. 檢查是否為聊天知識書
+    // chat_metadata['world_info'] 儲存了當前聊天室指定的知識書檔案名
+    const chatLorebook = chat_metadata[METADATA_KEY];
+    if (chatLorebook && entry.world === chatLorebook) {
         return WI_CATEGORY_KEYS.CHAT;
     }
+
+    // 2. 檢查是否為全域世界書
+    // selected_world_info 是一個陣列，包含所有在下拉選單中啟用的世界書檔案名
+    if (selected_world_info && selected_world_info.includes(entry.world)) {
+        return WI_CATEGORY_KEYS.GLOBAL;
+    }
+
+    // 3. 如果以上皆非，則判定為角色知識書
+    // SillyTavern 的邏輯是最後處理角色書，所以排除法是可行的
     return WI_CATEGORY_KEYS.CHARACTER;
 }
+
 
 /**
  * 處理並分類觸發的知識書資料，使其符合模板需求
@@ -98,10 +115,12 @@ function processWorldInfoData(activatedEntries) {
             secondaryKeys: entry.keysecondary?.join(', ') || null,
             depth: entry.depth,
         };
-        
+
+        // 【修正點】稍微修改分類邏輯，確保有預設分類
         if (categorized[categoryKey]) {
             categorized[categoryKey].push(processedEntry);
         } else {
+            // 這個分類理論上不會再被用到，但保留作為保險
             categorized[WI_CATEGORY_KEYS.OTHER].push(processedEntry);
         }
     });
@@ -175,8 +194,9 @@ let lastActivatedWorldInfo = null;
 
 // 1. 監聽世界書觸發事件，處理並暫存資料
 eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
-    if (data && data.entries && data.entries.length > 0) {
-        lastActivatedWorldInfo = processWorldInfoData(data.entries);
+    // 【修正點】官方事件回傳的是一個物件陣列，而不是物件 {entries: []}
+    if (data && Array.isArray(data) && data.length > 0) {
+        lastActivatedWorldInfo = processWorldInfoData(data);
     } else {
         lastActivatedWorldInfo = null;
     }
