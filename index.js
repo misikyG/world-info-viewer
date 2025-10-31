@@ -15,6 +15,7 @@ import {
     callGenericPopup,
     POPUP_TYPE
 } from '../../../popup.js';
+
 import {
     METADATA_KEY,
     selected_world_info,
@@ -109,6 +110,7 @@ function processWorldInfoData(activatedEntries) {
         const categoryKey = getWICategoryKey(entry);
         const status = getEntryStatus(entry);
         const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})`, emoji: '❓' };
+        
         const hasSecondaryKeys = entry.keysecondary && entry.keysecondary.length > 0;
 
         const processedEntry = {
@@ -119,9 +121,11 @@ function processWorldInfoData(activatedEntries) {
             position: posInfo.name,
             content: entry.content,
             keys: entry.key?.join(', ') || null,
-            secondaryKeys: entry.keysecondary?.join(', ') || null,
-            depthText: (entry.depth != null) ? ` / 深度 ${entry.depth}` : '',
-            selectiveLogicName: hasSecondaryKeys ? (selectiveLogicInfo[entry.selectiveLogic] || `未知邏輯 (${entry.selectiveLogic})`) : null,
+            
+            secondaryKeys: hasSecondaryKeys ? entry.keysecondary.join(', ') : null,
+            selectiveLogicName: hasSecondaryKeys ? (selectiveLogicInfo[entry.selectiveLogic] ?? `未知邏輯 (${entry.selectiveLogic})`) : null,
+
+            depthText: (entry.depth !== null && entry.depth !== undefined) ? ` / 深度 ${entry.depth}` : '',
         };
 
         if (categorized[categoryKey]) {
@@ -133,6 +137,7 @@ function processWorldInfoData(activatedEntries) {
 
     return categorized;
 }
+
 
 function addViewButtonToMessage(messageId) {
     if (!chat[messageId]?.extra?.worldInfoViewer) {
@@ -179,7 +184,6 @@ async function showWorldInfoPopup(messageId) {
     }
 }
 
-// --- 事件監聽器 ---
 let lastActivatedWorldInfo = null;
 
 eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
