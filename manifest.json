@@ -1,10 +1,12 @@
 {
-    "name": "world-info-viewer",
-    "display_name": "World Info Viewer",
-    "author": "You!",
-    "description": "在聊天介面新增一個按鈕，用來即時查看 AI 回應觸發了哪些世界書條目。",
-    "version": "1.0.0",
-    "js": "script.js",
-    "css": "style.css",
-    "loading_order": 999
+  "display_name": "世界書觸發檢視器",
+  "loading_order": 10,
+  "requires": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "你的名稱",
+  "version": "1.0.0",
+  "homePage": "https://github.com/misikyG/world-info-viewer",
+  "description": "在聊天介面直觀查看已觸發的世界書條目"
 }
+
