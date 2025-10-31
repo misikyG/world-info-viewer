@@ -20,6 +20,9 @@
                     {{#if secondaryKeys}}
                     <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
                     {{/if}}
+                    {{#if selectiveLogicName}}
+                    <div class="wi-info-item"><strong>選填過濾器：</strong><span>{{selectiveLogicName}}</span></div>
+                    {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
@@ -47,6 +50,9 @@
                     {{/if}}
                     {{#if secondaryKeys}}
                     <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
+                    {{/if}}
+                    {{#if selectiveLogicName}}
+                    <div class="wi-info-item"><strong>選填過濾器：</strong><span>{{selectiveLogicName}}</span></div>
                     {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
@@ -76,6 +82,9 @@
                     {{#if secondaryKeys}}
                     <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
                     {{/if}}
+                    {{#if selectiveLogicName}}
+                    <div class="wi-info-item"><strong>選填過濾器：</strong><span>{{selectiveLogicName}}</span></div>
+                    {{/if}}
                     <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
@@ -86,7 +95,7 @@
             {{/each}}
         </div>
         {{/if}}
-    
+
         {{#if chat}}
         <div class="wi-category">
             <h4><span class="wi-emoji">💬</span> 聊天知識書</h4>
@@ -104,7 +113,10 @@
                     {{#if secondaryKeys}}
                     <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
                     {{/if}}
-                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{#if depth}} / 深度 {{depth}}{{/if}}</span></div>
+                    {{#if selectiveLogicName}}
+                    <div class="wi-info-item"><strong>選填過濾器：</strong><span>{{selectiveLogicName}}</span></div>
+                    {{/if}}
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}{{depthText}}</span></div>
                 </div>
                 <div class="wi-entry-content">
                     <strong>內容：</strong>
@@ -129,6 +141,12 @@
                      {{#if keys}}
                      <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
                      {{/if}}
+                     {{#if secondaryKeys}}
+                     <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
+                     {{/if}}
+                    {{#if selectiveLogicName}}
+                    <div class="wi-info-item"><strong>選填過濾器：</strong><span>{{selectiveLogicName}}</span></div>
+                    {{/if}}
                      <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
                 </div>
                 <div class="wi-entry-content">
@@ -146,4 +164,3 @@
         </div>
     {{/if}}
 </div>
-
