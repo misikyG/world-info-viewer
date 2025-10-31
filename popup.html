@@ -2,10 +2,12 @@
     <h3>已觸發的世界書條目</h3>
     <hr>
 
-    {{#if (or global character chat other)}}
+    <!-- 【修正點】更新 #if 判斷式以包含新的分類 -->
+    {{#if (or global characterPrimary characterAdditional chat other)}}
         {{#if global}}
         <div class="wi-category">
             <h4><span class="wi-emoji">🌐</span> 全域世界書</h4>
+            <!-- 以下內容不變，複製即可 -->
             {{#each global}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
@@ -31,10 +33,40 @@
         </div>
         {{/if}}
 
-        {{#if character}}
+        <!-- 【新增】角色主要知識書區塊 -->
+        {{#if characterPrimary}}
         <div class="wi-category">
-            <h4><span class="wi-emoji">👤</span> 角色知識書</h4>
-            {{#each character}}
+            <h4><span class="wi-emoji">👤</span> 角色主要知識書</h4>
+            {{#each characterPrimary}}
+            <div class="wi-entry">
+                <div class="wi-entry-header">
+                    <span class="wi-emoji">{{emoji}}</span>
+                    <span class="wi-title">{{worldName}} / {{entryName}}</span>
+                </div>
+                <div class="wi-entry-info">
+                    <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
+                    {{#if keys}}
+                    <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
+                    {{/if}}
+                    {{#if secondaryKeys}}
+                    <div class="wi-info-item"><strong>次關鍵字：</strong><span>{{secondaryKeys}}</span></div>
+                    {{/if}}
+                    <div class="wi-info-item"><strong>插入位置：</strong><span>{{position}}</span></div>
+                </div>
+                <div class="wi-entry-content">
+                    <strong>內容：</strong>
+                    <pre>{{content}}</pre>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+
+        <!-- 【新增】角色額外知識書區塊 -->
+        {{#if characterAdditional}}
+        <div class="wi-category">
+            <h4><span class="wi-emoji">📚</span> 角色額外知識書</h4>
+            {{#each characterAdditional}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
                     <span class="wi-emoji">{{emoji}}</span>
@@ -62,6 +94,7 @@
         {{#if chat}}
         <div class="wi-category">
             <h4><span class="wi-emoji">💬</span> 聊天知識書</h4>
+            <!-- 以下內容不變，複製即可 -->
             {{#each chat}}
             <div class="wi-entry">
                 <div class="wi-entry-header">
@@ -88,6 +121,7 @@
         {{/if}}
 
         {{#if other}}
+        <!-- 其他區塊保持不變，作為備用 -->
         <div class="wi-category">
             <h4><span class="wi-emoji">📦</span> 其他</h4>
             {{#each other}}
@@ -97,7 +131,6 @@
                     <span class="wi-title">{{worldName}} / {{entryName}}</span>
                 </div>
                 <div class="wi-entry-info">
-                     <!-- 【修正點】在 "其他" 類別中補上狀態顯示 -->
                      <div class="wi-info-item"><strong>狀態：</strong><span>{{statusName}}</span></div>
                      {{#if keys}}
                      <div class="wi-info-item"><strong>主關鍵字：</strong><span>{{keys}}</span></div>
