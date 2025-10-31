@@ -1,9 +1,7 @@
-// 【修正點】將 import 拆分成三個，從各自正確的來源導入
 import {
     eventSource,
     event_types,
     chat,
-    // 【新增】導入目前聊天元數據、啟用的世界書清單
     chat_metadata,
     selected_world_info,
 } from '../../../../script.js';
@@ -17,15 +15,13 @@ import {
     POPUP_TYPE
 } from '../../../popup.js';
 
-// 【新增】從 world-info.js 導入元數據鍵名
 import { METADATA_KEY } from '../../../world-info.js';
 
 
-// 透過 import.meta.url 動態取得擴充路徑
 const url = new URL(import.meta.url);
 const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extensions/') + 11, url.pathname.lastIndexOf('/'));
 
-// 知識書條目位置資訊
+
 const positionInfo = {
     0: { name: "角色設定前", emoji: "📄" },
     1: { name: "角色設定後", emoji: "📄" },
@@ -52,16 +48,15 @@ const WI_CATEGORY_KEYS = {
  */
 function getEntryStatus(entry) {
     if (entry.constant === true) {
-        return { emoji: '🟢', name: '恆定 (Constant)' };
+        return { emoji: '🔵', name: '恆定 (Constant)' };
     }
     if (entry.vectorized === true) {
         return { emoji: '🔗', name: '向量 (Vectorized)' };
     }
-    return { emoji: '🔵', name: '關鍵字 (Keyword)' };
+    return { emoji: '🟢', name: '關鍵字 (Keyword)' };
 }
 
 /**
- * 【修正點】重寫分類邏輯，使其符合 SillyTavern 的判斷方式
  * 判斷條目屬於哪個分類
  * @param {object} entry - 知識書條目
  * @returns {string} - 分類鍵名 (e.g., 'global', 'character')
@@ -194,7 +189,6 @@ let lastActivatedWorldInfo = null;
 
 // 1. 監聽世界書觸發事件，處理並暫存資料
 eventSource.on(event_types.WORLD_INFO_ACTIVATED, (data) => {
-    // 【修正點】官方事件回傳的是一個物件陣列，而不是物件 {entries: []}
     if (data && Array.isArray(data) && data.length > 0) {
         lastActivatedWorldInfo = processWorldInfoData(data);
     } else {
@@ -229,3 +223,4 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
         });
     }, 500);
 });
+
