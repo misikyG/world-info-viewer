@@ -1,4 +1,4 @@
-import { eventSource, event_types as eventTypes, chat } from '../../../../script.js';
+import { eventSource, event_types as eventTypes, chat, selected_world_info, characters, this_chid, world_info, chat_metadata, power_user } from '../../../../script.js';
 import {
     renderExtensionTemplateAsync
 } from '../../../extensions.js';
@@ -6,7 +6,6 @@ import {
     callGenericPopup,
     POPUP_TYPE
 } from '../../../popup.js';
-
 
 // ------------------------------
 // 全域變數和設定
@@ -16,16 +15,16 @@ const extensionName = "third-party/world-info-viewer";
 
 let latestTriggeredWorldInfo = null;
 
-
+// 插入位置的資訊（維持不變，用於顯示文字）
 const positionInfo = {
-    0: { name: "角色設定前", emoji: "🟢", category: "global" },
-    1: { name: "角色設定後", emoji: "🔵", category: "character" },
-    2: { name: "筆記頂部", emoji: "📝", category: "other" },
-    3: { name: "筆記底部", emoji: "📝", category: "other" },
-    4: { name: "依深度插入", emoji: "🔗", category: "chat" },
-    5: { name: "範例頂部", emoji: "💡", category: "other" },
-    6: { name: "範例底部", emoji: "💡", category: "other" },
-    7: { name: "通道", emoji: "🔌", category: "other" },
+    0: { name: "角色設定前", emoji: "📝" },
+    1: { name: "角色設定後", emoji: "📝" },
+    2: { name: "筆記頂部", emoji: "📝" },
+    3: { name: "筆記底部", emoji: "📝" },
+    4: { name: "依深度插入", emoji: "🔗" },
+    5: { name: "範例頂部", emoji: "💡" },
+    6: { name: "範例底部", emoji: "💡" },
+    7: { name: "通道", emoji: "🔌" },
 };
 
 // ------------------------------
@@ -34,12 +33,12 @@ const positionInfo = {
 
 eventSource.on(eventTypes.WORLD_INFO_ACTIVATED, (activatedEntries) => {
     if (!activatedEntries || activatedEntries.length === 0) {
-        latestTriggeredWorldInfo = null; // 如果沒有觸發，清空暫存
+        latestTriggeredWorldInfo = null;
         return;
     }
 
     const organizedData = organizeWorldInfoData(activatedEntries);
-    latestTriggeredWorldInfo = organizedData; // 存到臨時變數
+    latestTriggeredWorldInfo = organizedData;
     console.log(`[${extensionName}] 偵測到 ${activatedEntries.length} 個世界書觸發，已暫存。`);
 });
 
@@ -49,9 +48,7 @@ eventSource.on(eventTypes.MESSAGE_RECEIVED, (messageId) => {
             chat[messageId].extra = {};
         }
         chat[messageId].extra.worldInfoViewer = latestTriggeredWorldInfo;
-
         latestTriggeredWorldInfo = null;
-
         console.log(`[${extensionName}] MESSAGE_RECEIVED: 已將暫存的世界書資料附加到訊息 #${messageId} 的 extra 屬性中。`);
     }
 });
@@ -79,20 +76,47 @@ eventSource.on(eventTypes.CHAT_CHANGED, () => {
     }, 500);
 });
 
-
 // ------------------------------
 // 輔助函式
 // ------------------------------
 
+/**
+ * @param {import('../../../../world-info.js').WIEntryFieldDefinition[]} entries
+ */
 function organizeWorldInfoData(entries) {
-    const organized = { global: [], character: [], chat: [], other: [] };
+    // 【修改】增加新的分類
+    const organized = { global: [], characterPrimary: [], characterExtra: [], chat: [], persona: [], other: [] };
+
+    // 【修改】獲取當前角色的資訊，以便判斷世界書類型
+    const character = characters[this_chid];
+    const charFileName = character ? `${character.name}_${character.avatar.replace('.png', '')}` : null;
+    const charExtraLoreBooks = charFileName ? world_info.charLore?.find(e => e.name === charFileName)?.extraBooks ?? [] : [];
+
     entries.forEach(entry => {
-        const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})`, emoji: "❓", category: "other" };
+        const posInfo = positionInfo[entry.position] || { name: `未知位置 (${entry.position})` };
+
+        // 【修改】核心分類邏輯
+        let category = 'other';
+        if (selected_world_info.includes(entry.world)) {
+            category = 'global';
+        } else if (character && character.data?.extensions?.world === entry.world) {
+            category = 'characterPrimary';
+        } else if (charExtraLoreBooks.includes(entry.world)) {
+            category = 'characterExtra';
+        } else if (chat_metadata.world_info === entry.world) {
+            category = 'chat';
+        } else if (power_user.persona_description_lorebook === entry.world) {
+            category = 'persona';
+        }
+        
+        // 【修改】Emoji 判定邏輯
+        // 順序：恆定 > 向量 > 一般
+        const emoji = entry.constant ? '🟢' : (entry.vectorized ? '🔗' : '🔵');
 
         const formattedEntry = {
             worldName: entry.world,
             entryName: entry.comment || `條目 ${entry.uid}`,
-            emoji: entry.vectorized ? '🧠' : posInfo.emoji,
+            emoji: emoji,
             position: posInfo.name,
             content: entry.content,
             keys: entry.key && entry.key.length > 0 ? entry.key.join(", ") : "",
@@ -100,7 +124,6 @@ function organizeWorldInfoData(entries) {
             depth: entry.depth ?? ""
         };
 
-        const category = posInfo.category;
         if (organized[category]) {
             organized[category].push(formattedEntry);
         } else {
@@ -109,6 +132,7 @@ function organizeWorldInfoData(entries) {
     });
     return organized;
 }
+
 
 function addViewButtonToMessage(messageId) {
     setTimeout(() => {
@@ -136,8 +160,6 @@ function addViewButtonToMessage(messageId) {
         if (buttonContainer) {
             buttonContainer.prepend(button);
             console.log(`[${extensionName}] addViewButtonToMessage: 已成功將按鈕添加到訊息 #${messageId}。`);
-        } else {
-
         }
     }, 100);
 }
@@ -150,7 +172,6 @@ async function showWorldInfoPopup(messageId) {
     }
 
     try {
-
         const html = await renderExtensionTemplateAsync(extensionName, "popup", data);
 
         callGenericPopup(html, POPUP_TYPE.TEXT, '', {
