@@ -183,9 +183,7 @@ function getWorldOrderByName(worldName) {
 }
 
 function getPositionSortIndex(position) {
-  if (typeof position === 'number' && position >= 0 && position <= 7) {
-    return position;
-  }
+  if (position in POSITION_SORT_ORDER) return POSITION_SORT_ORDER[position];
   return 999;
 }
 
@@ -363,5 +361,6 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
+
 
 
