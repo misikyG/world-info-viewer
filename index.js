@@ -38,12 +38,16 @@ const positionInfo = {
   7: { name: 'Outlet', emoji: '➡️' },
 };
 
-function getPositionSortIndex(position) {
-  if (typeof position === 'number' && position >= 0 && position <= 7) {
-    return position;
-  }
-  return 999;
-}
+const POSITION_SORT_ORDER = {
+  0: 0,
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+  7: 7,
+};
 
 const selectiveLogicInfo = {
   0: '包含任一 (AND ANY)',
@@ -179,7 +183,9 @@ function getWorldOrderByName(worldName) {
 }
 
 function getPositionSortIndex(position) {
-  if (position in POSITION_SORT_ORDER) return POSITION_SORT_ORDER[position];
+  if (typeof position === 'number' && position >= 0 && position <= 7) {
+    return position;
+  }
   return 999;
 }
 
@@ -357,4 +363,5 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
+
 
