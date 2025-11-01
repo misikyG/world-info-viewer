@@ -30,22 +30,22 @@ const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extension
 const positionInfo = {
   0: { name: '角色設定前', emoji: '📙' },
   1: { name: '角色設定後', emoji: '📙' },
-  2: { name: '範例前', emoji: '📄' },
-  3: { name: '範例後', emoji: '📄' },
-  4: { name: '作者註釋前', emoji: '📝' },
-  5: { name: '作者註釋後', emoji: '📝' },
-  6: { name: '依深度插入', emoji: '💉' },
+  2: { name: '作者註釋前', emoji: '📝' },
+  3: { name: '作者註釋後', emoji: '📝' },
+  4: { name: '依深度插入', emoji: '💉' },
+  5: { name: '範例前', emoji: '📄' },
+  6: { name: '範例後', emoji: '📄' },
   7: { name: 'Outlet', emoji: '➡️' },
 };
 
 const POSITION_SORT_ORDER = {
   0: 0,
   1: 1,
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  6: 6,
+  5: 2,
+  6: 3,
+  2: 4,
+  3: 5,
+  4: 6,
   7: 7,
 };
 
@@ -256,8 +256,8 @@ function processWorldInfoData(activatedEntries) {
         ? (selectiveLogicInfo?.[entryRaw.selectiveLogic] ?? `未知邏輯 (${entryRaw.selectiveLogic})`)
         : null,
       depth: entryRaw.depth ?? null,
-      displayDepth: (position === 6) ? (entryRaw.depth ?? null) : null,
-      roleDepthTag: (position === 6) ? formatRoleDepthTag(entryRaw) : null,
+      displayDepth: (position === 4) ? (entryRaw.depth ?? null) : null,
+      roleDepthTag: (position === 4) ? formatRoleDepthTag(entryRaw) : null,
       role: (entryRaw.role || entryRaw.messageRole || 'assistant'),
       sourceType: getEntrySourceType(entryRaw),
       worldOrder,
@@ -269,7 +269,7 @@ function processWorldInfoData(activatedEntries) {
   });
 
   Object.values(byPosition).forEach((posGroup) => {
-    if (posGroup.position === 6) {
+    if (posGroup.position === 4) {
       posGroup.entries.sort(compareDepthEntries);
     } else {
       posGroup.entries.sort(compareOrderEntries);
