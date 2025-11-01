@@ -243,26 +243,28 @@ function processWorldInfoData(activatedEntries) {
       getWorldOrderByName(entryRaw.world);
 
     const processedEntry = {
-      uid: entryRaw.uid,
-      worldName: entryRaw.world,
-      entryName: entryRaw.comment || `條目 #${entryRaw.uid}`,
-      sourceKey,
-      sourceName,
-      statusEmoji: status.emoji,
-      statusName: status.name,
-      content: entryRaw.content,
-      keys: Array.isArray(entryRaw.key) ? entryRaw.key.join(', ') : (typeof entryRaw.key === 'string' ? entryRaw.key : null),
-      secondaryKeys: Array.isArray(entryRaw.keysecondary) ? entryRaw.keysecondary.join(', ') : null,
-      selectiveLogicName: Array.isArray(entryRaw.keysecondary)
-        ? (selectiveLogicInfo?.[entryRaw.selectiveLogic] ?? `未知邏輯 (${entryRaw.selectiveLogic})`)
-        : null,
-      depth: entryRaw.depth ?? null,
-      role: (entryRaw.role || entryRaw.messageRole || 'assistant'),
-      sourceType: getEntrySourceType(entryRaw),
-      roleDepthTag: (position === 6) ? formatRoleDepthTag(entryRaw) : null,
-      depth: (position === 6) ? (entryRaw.depth ?? null) : null,
-      worldOrder,
-    };
+  uid: entryRaw.uid,
+  worldName: entryRaw.world,
+  entryName: entryRaw.comment || `條目 #${entryRaw.uid}`,
+  sourceKey,
+  sourceName,
+  statusEmoji: status.emoji,
+  statusName: status.name,
+  content: entryRaw.content,
+  keys: Array.isArray(entryRaw.key) ? entryRaw.key.join(', ') : (typeof entryRaw.key === 'string' ? entryRaw.key : null),
+  secondaryKeys: Array.isArray(entryRaw.keysecondary) ? entryRaw.keysecondary.join(', ') : null,
+  selectiveLogicName: Array.isArray(entryRaw.keysecondary)
+    ? (selectiveLogicInfo?.[entryRaw.selectiveLogic] ?? `未知邏輯 (${entryRaw.selectiveLogic})`)
+    : null,
+  
+  displayDepth: (position === 6) ? (entryRaw.depth ?? null) : null,
+  roleDepthTag: (position === 6) ? formatRoleDepthTag(entryRaw) : null,
+  
+  role: (entryRaw.role || entryRaw.messageRole || 'assistant'),
+  sourceType: getEntrySourceType(entryRaw),
+  worldOrder,
+};
+
 
     byPosition[posKey].entries.push(processedEntry);
   });
