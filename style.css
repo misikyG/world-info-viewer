@@ -1,19 +1,18 @@
-/* ===== 主容器 ===== */
+/* ===== 按鈕 ===== */
 .worldinfo-viewer-btn {
   cursor: pointer;
   opacity: 0.7;
   transition: opacity 0.2s;
 }
-
 .worldinfo-viewer-btn:hover {
   opacity: 1;
 }
 
+/* ===== 彈窗 ===== */
 .worldinfo-viewer-popup {
   font-size: 14px;
   padding: 5px 15px;
 }
-
 .worldinfo-viewer-popup h3 {
   text-align: center;
   color: var(--text-color);
@@ -21,11 +20,10 @@
   font-size: 1.3em;
 }
 
-/* ===== 插入位置組 ===== */
+/* ===== 位置群組 ===== */
 .wi-position-group {
   margin-bottom: 25px;
 }
-
 .wi-position-header {
   color: var(--primary-color);
   margin-bottom: 12px;
@@ -36,7 +34,6 @@
   gap: 8px;
   font-size: 1.15em;
 }
-
 .wi-position-name {
   font-weight: bold;
 }
@@ -46,58 +43,51 @@
   margin-left: 12px;
 }
 
-/* ===== 條目卡片 ===== */
+/* ===== 條目卡 ===== */
 .wi-entry {
   background: var(--background-color-secondary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-
 .wi-entry:hover {
   border-color: var(--primary-color);
 }
 
-/* ===== 條目標題行 ===== */
+/* ===== 標題列 ===== */
 .wi-entry-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
   margin-bottom: 10px;
 }
-
 .wi-title-line {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   flex: 1;
-  font-size: 1em;
 }
-
 .wi-source {
   font-weight: bold;
   color: var(--text-color);
 }
-
 .wi-world {
   color: var(--primary-color);
   font-weight: 500;
 }
-
 .wi-entry-name {
   color: var(--text-color);
   font-style: italic;
 }
-
-.wi-status-emoji {
-  font-size: 1.1em;
-  margin-left: 4px;
-  flex-shrink: 0;
+.wi-role-depth {
+  color: var(--text-color-secondary);
+  font-weight: 600;
 }
-
+.wi-status-tail {
+  font-size: 1.2em;
+}
 .wi-separator {
   color: var(--text-color-tertiary);
   opacity: 0.6;
@@ -108,51 +98,42 @@
   font-size: 0.9em;
   color: var(--text-color-secondary);
   margin-bottom: 10px;
-  padding-left: 24px;
+  padding-left: 2px;
   display: flex;
   flex-direction: column;
   gap: 3px;
   align-items: flex-start;
 }
-
 .wi-info-item {
   display: flex;
   gap: 8px;
   align-items: flex-start;
 }
-
 .wi-info-item strong {
   flex-shrink: 0;
   color: var(--text-color-tertiary);
   min-width: 50px;
 }
-
 .wi-info-item span {
   color: var(--text-color-secondary);
-  font-weight: 500;
 }
 
-/* ===== 摺疊詳情 ===== */
+/* ===== 摺疊 ===== */
 .wi-details {
   margin-top: 8px;
-  margin-left: 24px;
-  width: calc(100% - 24px);
+  margin-left: 2px;
+  width: calc(100% - 2px);
   text-align: left;
 }
-
 .wi-details summary {
   cursor: pointer;
   color: var(--text-color-tertiary);
   font-weight: bold;
-  text-align: left;
-  padding-left: 0;
   user-select: none;
 }
-
 .wi-details summary:hover {
   color: var(--primary-color);
 }
-
 .wi-details-content {
   padding-top: 8px;
   padding-left: 18px;
@@ -160,19 +141,17 @@
   text-align: left;
 }
 
-/* ===== 內容展示 ===== */
+/* ===== 內容 ===== */
 .wi-entry-content {
   margin-top: 12px;
-  padding-left: 24px;
+  padding-left: 2px;
   text-align: left;
 }
-
 .wi-entry-content strong {
   display: block;
   margin-bottom: 8px;
   color: var(--text-color-tertiary);
 }
-
 .wi-entry-content pre {
   background: var(--background-color-tertiary);
   border: 1px solid var(--border-color);
