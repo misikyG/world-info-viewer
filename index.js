@@ -38,17 +38,12 @@ const positionInfo = {
   7: { name: 'Outlet', emoji: '➡️' },
 };
 
-
-const POSITION_SORT_ORDER = {
-  0: 0,
-  1: 1,
-  5: 2,
-  6: 3,
-  2: 4,
-  3: 5,
-  4: 6,
-  7: 7,
-};
+function getPositionSortIndex(position) {
+  if (typeof position === 'number' && position >= 0 && position <= 7) {
+    return position;
+  }
+  return 999;
+}
 
 const selectiveLogicInfo = {
   0: '包含任一 (AND ANY)',
@@ -362,3 +357,4 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
+
