@@ -27,7 +27,6 @@ import { getCharaFilename } from '../../../utils.js';
 const url = new URL(import.meta.url);
 const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extensions/') + 11, url.pathname.lastIndexOf('/'));
 
-// 插入位置對應表（顯示名稱與 emoji）
 const positionInfo = {
   0: { name: '角色設定前', emoji: '📙' },
   1: { name: '角色設定後', emoji: '📙' },
@@ -39,19 +38,17 @@ const positionInfo = {
   7: { name: 'Outlet', emoji: '➡️' },
 };
 
-// 顯示分組排序順序（越小越前）
 const POSITION_SORT_ORDER = {
-  0: 0,  // 角色設定前
-  1: 1,  // 角色設定後
-  5: 2,  // 範例頂部
-  6: 3,  // 範例底部
-  2: 4,  // 作者註釋頂部
-  3: 5,  // 作者註釋底部
-  4: 6,  // 依深度插入
-  7: 7,  // Outlet
+  0: 0,
+  1: 1,
+  5: 2,
+  6: 3,
+  2: 4,
+  3: 5,
+  4: 6,
+  7: 7,
 };
 
-// 主副鍵邏輯文字
 const selectiveLogicInfo = {
   0: '包含任一 (AND ANY)',
   1: '未完全包含 (NOT ALL)',
@@ -59,7 +56,6 @@ const selectiveLogicInfo = {
   3: '包含全部 (AND ALL)',
 };
 
-// 世界書來源分類（不包含「其他」）
 const WI_SOURCE_KEYS = {
   GLOBAL: 'global',
   CHARACTER_PRIMARY: 'characterPrimary',
@@ -67,7 +63,6 @@ const WI_SOURCE_KEYS = {
   CHAT: 'chat',
 };
 
-// 顯示名稱（精簡）
 const WI_SOURCE_DISPLAY = {
   [WI_SOURCE_KEYS.GLOBAL]: '全域',
   [WI_SOURCE_KEYS.CHARACTER_PRIMARY]: '主要知識',
@@ -75,14 +70,12 @@ const WI_SOURCE_DISPLAY = {
   [WI_SOURCE_KEYS.CHAT]: '聊天知識',
 };
 
-// 條目來源類型（排序優先）
 const ENTRY_SOURCE_TYPE = {
-  ASSISTANT: 3, // 最優
+  ASSISTANT: 3,
   USER: 2,
-  SYSTEM: 1,    // 最低
+  SYSTEM: 1,
 };
 
-// 角色標籤顯示
 function roleDisplayName(role) {
   if (role === 'assistant') return '@AI';
   if (role === 'user') return '@使用者';
@@ -90,7 +83,6 @@ function roleDisplayName(role) {
   return '@AI';
 }
 
-// 嘗試解析條目觸發的角色類型
 function getEntrySourceType(entry) {
   const role = (entry.role || entry.messageRole || '').toLowerCase();
   if (role === 'assistant') return ENTRY_SOURCE_TYPE.ASSISTANT;
@@ -99,7 +91,6 @@ function getEntrySourceType(entry) {
   return ENTRY_SOURCE_TYPE.ASSISTANT;
 }
 
-// 取得世界書來源（不產生「其他」）
 function getWISourceKey(entry) {
   const worldName = entry.world;
   const chatLoreName = chat_metadata?.[METADATA_KEY];
@@ -126,7 +117,6 @@ function getWISourceKey(entry) {
     return WI_SOURCE_KEYS.GLOBAL;
   }
 
-  // 無匹配時不回傳「其他」，改回傳 null，顯示時略過來源段
   return null;
 }
 
@@ -135,14 +125,12 @@ function getSourceDisplayName(sourceKey) {
   return WI_SOURCE_DISPLAY[sourceKey] || '';
 }
 
-// 條目狀態
 function getEntryStatus(entry) {
   if (entry.constant === true) return { emoji: '🔵', name: '恆定 (Constant)' };
   if (entry.vectorized === true) return { emoji: '🔗', name: '向量 (Vectorized)' };
   return { emoji: '🟢', name: '關鍵字 (Keyword)' };
 }
 
-// 深度插入之角色深度標籤
 function formatRoleDepthTag(entry) {
   const role = (entry.role || entry.messageRole || 'assistant').toLowerCase();
   const depth = entry.depth ?? null;
@@ -150,10 +138,8 @@ function formatRoleDepthTag(entry) {
   return `${roleDisplayName(role)} 深度 ${depth}`;
 }
 
-// 建立世界書 order 快取
 const worldOrderCache = new Map();
 
-// 嘗試取得世界書 order（多路徑容錯）
 function getWorldOrderByName(worldName) {
   if (!worldName) return Number.MAX_SAFE_INTEGER;
   if (worldOrderCache.has(worldName)) {
@@ -163,16 +149,13 @@ function getWorldOrderByName(worldName) {
   let order = Number.MAX_SAFE_INTEGER;
 
   try {
-    // 1) 若 entry 已攜帶
-    // 留空，這裡不處理 entry 本身，外層會填入
-
-    // 2) world_info 可能的容器
+ 
     const candidates = [
-      world_info?.worlds,            // 常見：[{ name, order, ... }]
-      world_info?.allWorlds,         // 可能存在
-      world_info?.files,             // 可能存在
-      world_info?.data,              // 可能存在
-      world_info?.all_worlds,        // 其他命名
+      world_info?.worlds,
+      world_info?.allWorlds,
+      world_info?.files,
+      world_info?.data,
+      world_info?.all_worlds,
     ].filter(Boolean);
 
     for (const list of candidates) {
@@ -191,48 +174,43 @@ function getWorldOrderByName(worldName) {
       }
     }
   } catch (err) {
-    // 忽略，使用預設
   }
 
   worldOrderCache.set(worldName, order);
   return order;
 }
 
-// 顯示群組排序索引
 function getPositionSortIndex(position) {
   if (position in POSITION_SORT_ORDER) return POSITION_SORT_ORDER[position];
-  return 999; // 未知位置排最後
+  return 999;
 }
 
-// 依規則排序：深度群組（position === 4）
 function compareDepthEntries(a, b) {
-  // 深度大者優先
   const depthA = a.depth ?? -Infinity;
   const depthB = b.depth ?? -Infinity;
   if (depthA !== depthB) return depthB - depthA;
-
-  // 同深度：AI > 使用者 > 系統
+  
   const stA = a.sourceType ?? ENTRY_SOURCE_TYPE.ASSISTANT;
   const stB = b.sourceType ?? ENTRY_SOURCE_TYPE.ASSISTANT;
   if (stA !== stB) return stB - stA;
-
-  // 最後以名稱穩定排序
+  
+  const orderA = (typeof a.worldOrder === 'number') ? a.worldOrder : Number.MAX_SAFE_INTEGER;
+  const orderB = (typeof b.worldOrder === 'number') ? b.worldOrder : Number.MAX_SAFE_INTEGER;
+  if (orderA !== orderB) return orderA - orderB;
+  
   return String(a.entryName || '').localeCompare(String(b.entryName || ''));
 }
 
-// 依規則排序：非深度群組（order 由世界書控制，UID不重要）
 function compareOrderEntries(a, b) {
   const oa = (typeof a.worldOrder === 'number') ? a.worldOrder : Number.MAX_SAFE_INTEGER;
   const ob = (typeof b.worldOrder === 'number') ? b.worldOrder : Number.MAX_SAFE_INTEGER;
   if (oa !== ob) return oa - ob;
 
-  // 同 order 時，以世界書名與條目名作穩定排序
   const wn = String(a.worldName || '').localeCompare(String(b.worldName || ''));
   if (wn !== 0) return wn;
   return String(a.entryName || '').localeCompare(String(b.entryName || ''));
 }
 
-// 整體處理：分組、加工、排序
 function processWorldInfoData(activatedEntries) {
   const byPosition = {};
 
@@ -256,7 +234,6 @@ function processWorldInfoData(activatedEntries) {
     const sourceKey = getWISourceKey(entryRaw);
     const sourceName = getSourceDisplayName(sourceKey);
 
-    // 嘗試帶入世界書 order（entry 自帶 > 查表）
     const worldOrder =
       (typeof entryRaw.worldOrder === 'number' ? entryRaw.worldOrder : undefined) ??
       (typeof entryRaw.order === 'number' ? entryRaw.order : undefined) ??
@@ -267,7 +244,7 @@ function processWorldInfoData(activatedEntries) {
       worldName: entryRaw.world,
       entryName: entryRaw.comment || `條目 #${entryRaw.uid}`,
       sourceKey,
-      sourceName, // 可能為空（移除「其他」）
+      sourceName,
       statusEmoji: status.emoji,
       statusName: status.name,
       content: entryRaw.content,
@@ -286,21 +263,16 @@ function processWorldInfoData(activatedEntries) {
     byPosition[posKey].entries.push(processedEntry);
   });
 
-  // 各位置內排序
   Object.values(byPosition).forEach((posGroup) => {
     if (posGroup.position === 4) {
-      // 依深度插入
       posGroup.entries.sort(compareDepthEntries);
     } else {
-      // 其餘位置只看世界書 order
       posGroup.entries.sort(compareOrderEntries);
     }
   });
 
-  // 移除空組
   const groups = Object.values(byPosition).filter(g => g.entries.length > 0);
 
-  // 按指定位置順序排序
   groups.sort((a, b) => getPositionSortIndex(a.position) - getPositionSortIndex(b.position));
 
   return groups;
@@ -384,4 +356,3 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
-
