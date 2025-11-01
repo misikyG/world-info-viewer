@@ -31,11 +31,11 @@ const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extension
 const positionInfo = {
   0: { name: '角色設定前', emoji: '📙' },
   1: { name: '角色設定後', emoji: '📙' },
-  2: { name: '作者註釋頂部', emoji: '📝' },
-  3: { name: '作者註釋底部', emoji: '📝' },
-  4: { name: '依深度插入', emoji: '💉' },
-  5: { name: '範例頂部', emoji: '📄' },
-  6: { name: '範例底部', emoji: '📄' },
+  2: { name: '範例頂部', emoji: '📄' },
+  3: { name: '範例底部', emoji: '📄' },
+  4: { name: '作者註釋頂部', emoji: '📝' },
+  5: { name: '作者註釋底部', emoji: '📝' },
+  6: { name: '依深度插入', emoji: '💉' },
   7: { name: 'Outlet', emoji: '➡️' },
 };
 
@@ -384,3 +384,4 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
+
