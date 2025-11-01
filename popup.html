@@ -1,10 +1,9 @@
 <div class="worldinfo-viewer-popup">
-  <h3>🌍 世界書觸發檢視</h3>
+  <h3>世界書觸發檢視</h3>
 
   {{#if positions.length}}
     {{#each positions}}
       <div class="wi-position-group">
-        <!-- 插入位置標題（無條目則不顯示，由上層已濾除） -->
         <h4 class="wi-position-header">
           <span class="wi-emoji">{{this.positionEmoji}}</span>
           <span class="wi-position-name">{{this.positionName}}</span>
@@ -13,7 +12,6 @@
         <div class="wi-entries-container">
           {{#each this.entries}}
             <div class="wi-entry">
-              <!-- 標題列：來源 | 世界書 | 條目 | 角色深度(僅深度插入) | 狀態emoji(尾端) -->
               <div class="wi-entry-header">
                 <div class="wi-title-line">
                   {{#if this.sourceName}}
@@ -33,8 +31,6 @@
                   <span class="wi-status-tail">{{this.statusEmoji}}</span>
                 </div>
               </div>
-
-              <!-- 條目資訊（移除單獨角色列，避免和角色深度標籤重複） -->
               <div class="wi-entry-info">
                 {{#if this.depth}}
                   <div class="wi-info-item">
@@ -51,7 +47,6 @@
                 {{/if}}
               </div>
 
-              <!-- 主關鍵字（摺疊） -->
               {{#if this.keys}}
                 <details class="wi-details">
                   <summary>主關鍵字</summary>
@@ -61,7 +56,6 @@
                 </details>
               {{/if}}
 
-              <!-- 選填過濾器（摺疊） -->
               {{#if this.secondaryKeys}}
                 <details class="wi-details">
                   <summary>選填過濾器</summary>
@@ -75,7 +69,6 @@
                 </details>
               {{/if}}
 
-              <!-- 內容 -->
               <div class="wi-entry-content">
                 <strong>內容:</strong>
                 <pre>{{this.content}}</pre>
