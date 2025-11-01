@@ -30,13 +30,14 @@ const extensionName = url.pathname.substring(url.pathname.lastIndexOf('extension
 const positionInfo = {
   0: { name: '角色設定前', emoji: '📙' },
   1: { name: '角色設定後', emoji: '📙' },
-  2: { name: '範例頂部', emoji: '📄' },
-  3: { name: '範例底部', emoji: '📄' },
-  4: { name: '作者註釋頂部', emoji: '📝' },
-  5: { name: '作者註釋底部', emoji: '📝' },
+  2: { name: '範例前', emoji: '📄' },
+  3: { name: '範例後', emoji: '📄' },
+  4: { name: '作者註釋前', emoji: '📝' },
+  5: { name: '作者註釋後', emoji: '📝' },
   6: { name: '依深度插入', emoji: '💉' },
   7: { name: 'Outlet', emoji: '➡️' },
 };
+
 
 const POSITION_SORT_ORDER = {
   0: 0,
@@ -84,10 +85,12 @@ function roleDisplayName(role) {
 }
 
 function getEntrySourceType(entry) {
-  const role = (entry.role || entry.messageRole || '').toLowerCase();
-  if (role === 'assistant') return ENTRY_SOURCE_TYPE.ASSISTANT;
+  const role = (entry.role || entry.messageRole || entry.insert_type || '').toLowerCase().trim();
+
+  if (role === 'assistant' || role === 'ai') return ENTRY_SOURCE_TYPE.ASSISTANT;
   if (role === 'user') return ENTRY_SOURCE_TYPE.USER;
   if (role === 'system') return ENTRY_SOURCE_TYPE.SYSTEM;
+
   return ENTRY_SOURCE_TYPE.ASSISTANT;
 }
 
@@ -149,7 +152,7 @@ function getWorldOrderByName(worldName) {
   let order = Number.MAX_SAFE_INTEGER;
 
   try {
- 
+
     const candidates = [
       world_info?.worlds,
       world_info?.allWorlds,
@@ -189,15 +192,15 @@ function compareDepthEntries(a, b) {
   const depthA = a.depth ?? -Infinity;
   const depthB = b.depth ?? -Infinity;
   if (depthA !== depthB) return depthB - depthA;
-  
+
   const stA = a.sourceType ?? ENTRY_SOURCE_TYPE.ASSISTANT;
   const stB = b.sourceType ?? ENTRY_SOURCE_TYPE.ASSISTANT;
   if (stA !== stB) return stB - stA;
-  
+
   const orderA = (typeof a.worldOrder === 'number') ? a.worldOrder : Number.MAX_SAFE_INTEGER;
   const orderB = (typeof b.worldOrder === 'number') ? b.worldOrder : Number.MAX_SAFE_INTEGER;
   if (orderA !== orderB) return orderA - orderB;
-  
+
   return String(a.entryName || '').localeCompare(String(b.entryName || ''));
 }
 
@@ -217,7 +220,7 @@ function processWorldInfoData(activatedEntries) {
   activatedEntries.forEach((entryRaw) => {
     if (!entryRaw || typeof entryRaw !== 'object') return;
 
-    const position = (typeof entryRaw.position === 'number') ? entryRaw.position : 4; // 預設深度插入
+    const position = (typeof entryRaw.position === 'number') ? entryRaw.position : 0;
     const posInfo = positionInfo[position] || { name: `未知位置 (${position})`, emoji: '❓' };
     const posKey = `pos_${position}`;
 
@@ -256,7 +259,8 @@ function processWorldInfoData(activatedEntries) {
       depth: entryRaw.depth ?? null,
       role: (entryRaw.role || entryRaw.messageRole || 'assistant'),
       sourceType: getEntrySourceType(entryRaw),
-      roleDepthTag: formatRoleDepthTag(entryRaw),
+      roleDepthTag: (position === 6) ? formatRoleDepthTag(entryRaw) : null,
+      depth: (position === 6) ? (entryRaw.depth ?? null) : null,
       worldOrder,
     };
 
@@ -264,7 +268,7 @@ function processWorldInfoData(activatedEntries) {
   });
 
   Object.values(byPosition).forEach((posGroup) => {
-    if (posGroup.position === 4) {
+    if (posGroup.position === 6) {
       posGroup.entries.sort(compareDepthEntries);
     } else {
       posGroup.entries.sort(compareOrderEntries);
