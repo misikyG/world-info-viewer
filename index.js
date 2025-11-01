@@ -76,6 +76,22 @@ const ENTRY_SOURCE_TYPE = {
   SYSTEM: 1,
 };
 
+// ===== Helper Functions =====
+
+function getRoleString(roleValue) {
+    if (roleValue === 0) return 'system';
+    if (roleValue === 1) return 'user';
+    if (roleValue === 2) return 'assistant';
+
+    if (typeof roleValue === 'string') {
+        const lowerRole = roleValue.toLowerCase().trim();
+        if (lowerRole === 'ai') return 'assistant';
+        return lowerRole;
+    }
+
+    return 'assistant';
+}
+
 function roleDisplayName(role) {
   if (role === 'assistant') return '@AI';
   if (role === 'user') return '@使用者';
@@ -84,9 +100,9 @@ function roleDisplayName(role) {
 }
 
 function getEntrySourceType(entry) {
-  const role = (entry.role || entry.messageRole || entry.insert_type || '').toLowerCase().trim();
+  const role = getRoleString(entry.role);
 
-  if (role === 'assistant' || role === 'ai') return ENTRY_SOURCE_TYPE.ASSISTANT;
+  if (role === 'assistant') return ENTRY_SOURCE_TYPE.ASSISTANT;
   if (role === 'user') return ENTRY_SOURCE_TYPE.USER;
   if (role === 'system') return ENTRY_SOURCE_TYPE.SYSTEM;
 
@@ -134,10 +150,10 @@ function getEntryStatus(entry) {
 }
 
 function formatRoleDepthTag(entry) {
-  const role = (entry.role || entry.messageRole || 'assistant').toLowerCase();
+  const roleString = getRoleString(entry.role);
   const depth = entry.depth ?? null;
   if (depth == null) return '';
-  return `${roleDisplayName(role)} 深度 ${depth}`;
+  return `${roleDisplayName(roleString)} 深度 ${depth}`;
 }
 
 const worldOrderCache = new Map();
@@ -359,4 +375,3 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
-
