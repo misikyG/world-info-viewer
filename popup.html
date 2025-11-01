@@ -1,44 +1,48 @@
 <div class="worldinfo-viewer-popup">
   <h3>🌍 世界書觸發檢視</h3>
-  
+
   {{#if positions.length}}
     {{#each positions}}
       <div class="wi-position-group">
-        <!-- 插入位置標題 -->
+        <!-- 插入位置標題（無條目則不顯示，由上層已濾除） -->
         <h4 class="wi-position-header">
           <span class="wi-emoji">{{this.positionEmoji}}</span>
           <span class="wi-position-name">{{this.positionName}}</span>
         </h4>
-        
-        <!-- 該位置下的所有條目 -->
+
         <div class="wi-entries-container">
           {{#each this.entries}}
             <div class="wi-entry">
-              <!-- 條目標題行：來源 | 世界書 | 條目名稱 | 狀態emoji（尾端） -->
+              <!-- 標題列：來源 | 世界書 | 條目 | 角色深度(僅深度插入) | 狀態emoji(尾端) -->
               <div class="wi-entry-header">
                 <div class="wi-title-line">
-                  <span class="wi-source">{{this.sourceName}}</span>
-                  <span class="wi-separator">|</span>
+                  {{#if this.sourceName}}
+                    <span class="wi-source">{{this.sourceName}}</span>
+                    <span class="wi-separator">|</span>
+                  {{/if}}
                   <span class="wi-world">{{this.worldName}}</span>
                   <span class="wi-separator">|</span>
                   <span class="wi-entry-name">{{this.entryName}}</span>
+
+                  {{#if this.roleDepthTag}}
+                    <span class="wi-separator">|</span>
+                    <span class="wi-role-depth">{{this.roleDepthTag}}</span>
+                  {{/if}}
+
                   <span class="wi-separator">|</span>
-                  <span class="wi-status-emoji">{{this.statusEmoji}}</span>
+                  <span class="wi-status-tail">{{this.statusEmoji}}</span>
                 </div>
               </div>
-              
-              <!-- 條目資訊 -->
+
+              <!-- 條目資訊（移除單獨角色列，避免和角色深度標籤重複） -->
               <div class="wi-entry-info">
-                <!-- 深度插入位置的角色+深度顯示 -->
-                {{#if ../position === 4}}
-                  {{#if this.roleDisplay}}
-                    <div class="wi-info-item">
-                      <strong>觸發:</strong>
-                      <span>{{this.roleDisplay}} 深度{{this.depth}}</span>
-                    </div>
-                  {{/if}}
+                {{#if this.depth}}
+                  <div class="wi-info-item">
+                    <strong>深度:</strong>
+                    <span>{{this.depth}}</span>
+                  </div>
                 {{/if}}
-                
+
                 {{#if this.statusName}}
                   <div class="wi-info-item">
                     <strong>狀態:</strong>
@@ -46,7 +50,7 @@
                   </div>
                 {{/if}}
               </div>
-              
+
               <!-- 主關鍵字（摺疊） -->
               {{#if this.keys}}
                 <details class="wi-details">
@@ -56,7 +60,7 @@
                   </div>
                 </details>
               {{/if}}
-              
+
               <!-- 選填過濾器（摺疊） -->
               {{#if this.secondaryKeys}}
                 <details class="wi-details">
@@ -70,7 +74,7 @@
                   </div>
                 </details>
               {{/if}}
-              
+
               <!-- 內容 -->
               <div class="wi-entry-content">
                 <strong>內容:</strong>
