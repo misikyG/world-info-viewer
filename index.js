@@ -312,7 +312,7 @@ function addViewButtonToMessage(messageId) {
 
   const button = document.createElement('div');
   button.id = buttonId;
-  button.className = 'mes_button worldinfo-viewer-btn fa-solid fa-earth-asia';
+  button.className = 'mes_button worldinfo-viewer-btn fa-regular fa-globe';
   button.title = '查看此回覆觸發的世界書';
   button.addEventListener('click', (event) => {
     event.stopPropagation();
