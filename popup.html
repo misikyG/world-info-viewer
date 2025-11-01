@@ -2,85 +2,83 @@
   <h3>世界書觸發檢視</h3>
 
   {{#if positions.length}}
-    {{#each positions}}
-      <div class="wi-position-group">
-        <h4 class="wi-position-header">
-          <span class="wi-emoji">{{this.positionEmoji}}</span>
-          <span class="wi-position-name">{{this.positionName}}</span>
-        </h4>
+  {{#each positions}}
+  <div class="wi-position-group">
+    <h4 class="wi-position-header">
+      <span class="wi-emoji">{{this.positionEmoji}}</span>
+      <span class="wi-position-name">{{this.positionName}}</span>
+    </h4>
 
-        <div class="wi-entries-container">
-          {{#each this.entries}}
-            <div class="wi-entry">
-              <div class="wi-entry-header">
-                <div class="wi-title-line">
-                  {{#if this.sourceName}}
-                    <span class="wi-source">{{this.sourceName}}</span>
-                    <span class="wi-separator">|</span>
-                  {{/if}}
-                  <span class="wi-world">{{this.worldName}}</span>
-                  <span class="wi-separator">|</span>
-                  <span class="wi-entry-name">{{this.entryName}}</span>
+    <div class="wi-entries-container">
+      {{#each this.entries}}
+      <div class="wi-entry">
+        <div class="wi-entry-header">
+          <div class="wi-title-line">
+            {{#if this.sourceName}}
+            <span class="wi-source">{{this.sourceName}}</span>
+            <span class="wi-separator">|</span>
+            {{/if}}
+            <span class="wi-world">{{this.worldName}}</span>
+            <span class="wi-separator">|</span>
+            <span class="wi-entry-name">{{this.entryName}}</span>
 
-                  {{#if this.roleDepthTag}}
-                    <span class="wi-separator">|</span>
-                    <span class="wi-role-depth">{{this.roleDepthTag}}</span>
-                  {{/if}}
+            {{#if this.roleDepthTag}}
+            <span class="wi-separator">|</span>
+            <span class="wi-role-depth">{{this.roleDepthTag}}</span>
+            {{/if}}
 
-                  <span class="wi-separator">|</span>
-                  <span class="wi-status-tail">{{this.statusEmoji}}</span>
-                </div>
-              </div>
-              <div class="wi-entry-info">
-                {{#if this.depth}}
-                  <div class="wi-info-item">
-                    <strong>深度:</strong>
-                    <span>{{this.depth}}</span>
-                  </div>
-                {{/if}}
-
-                {{#if this.statusName}}
-                  <div class="wi-info-item">
-                    <strong>狀態:</strong>
-                    <span>{{this.statusName}}</span>
-                  </div>
-                {{/if}}
-              </div>
-
-              {{#if this.keys}}
-                <details class="wi-details">
-                  <summary>主關鍵字</summary>
-                  <div class="wi-details-content">
-                    <pre>{{this.keys}}</pre>
-                  </div>
-                </details>
-              {{/if}}
-
-              {{#if this.secondaryKeys}}
-                <details class="wi-details">
-                  <summary>選填過濾器</summary>
-                  <div class="wi-details-content">
-                    <div class="wi-info-item">
-                      <strong>邏輯:</strong>
-                      <span>{{this.selectiveLogicName}}</span>
-                    </div>
-                    <pre>{{this.secondaryKeys}}</pre>
-                  </div>
-                </details>
-              {{/if}}
-
-              <div class="wi-entry-content">
-                <strong>內容:</strong>
-                <pre>{{this.content}}</pre>
-              </div>
-            </div>
-          {{/each}}
+            <span class="wi-separator">|</span>
+            <span class="wi-status-tail">{{this.statusEmoji}}</span>
+          </div>
         </div>
+        <div class="wi-info-item">
+          <strong>深度:</strong>
+          <span>{{this.displayDepth}}</span>
+        </div>
+        {{/if}}
+
+        {{#if this.statusName}}
+        <div class="wi-info-item">
+          <strong>狀態:</strong>
+          <span>{{this.statusName}}</span>
+        </div>
+        {{/if}}
       </div>
-    {{/each}}
-  {{else}}
-    <div class="wi-no-entries">
-      <p>此訊息沒有觸發任何世界書。</p>
+
+      {{#if this.keys}}
+      <details class="wi-details">
+        <summary>主關鍵字</summary>
+        <div class="wi-details-content">
+          <pre>{{this.keys}}</pre>
+        </div>
+      </details>
+      {{/if}}
+
+      {{#if this.secondaryKeys}}
+      <details class="wi-details">
+        <summary>選填過濾器</summary>
+        <div class="wi-details-content">
+          <div class="wi-info-item">
+            <strong>邏輯:</strong>
+            <span>{{this.selectiveLogicName}}</span>
+          </div>
+          <pre>{{this.secondaryKeys}}</pre>
+        </div>
+      </details>
+      {{/if}}
+
+      <div class="wi-entry-content">
+        <strong>內容:</strong>
+        <pre>{{this.content}}</pre>
+      </div>
     </div>
-  {{/if}}
+    {{/each}}
+  </div>
+</div>
+{{/each}}
+{{else}}
+<div class="wi-no-entries">
+  <p>此訊息沒有觸發任何世界書。</p>
+</div>
+{{/if}}
 </div>
