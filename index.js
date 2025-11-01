@@ -263,8 +263,6 @@ function processWorldInfoData(activatedEntries) {
       worldOrder,
     };
 
-
-
     byPosition[posKey].entries.push(processedEntry);
   });
 
@@ -361,3 +359,4 @@ eventSource.on(event_types.CHAT_CHANGED, () => {
     });
   }, 500);
 });
+
